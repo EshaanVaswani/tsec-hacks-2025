@@ -30,6 +30,7 @@ export const getMessages = TryCatch(async (req, res, next) => {
 
 export const getRecentChats = TryCatch(async (req, res, next) => {
   const userId = (req as any).user?._id; // Current user's ID
+  console.log(userId);
   if (!userId) {
     return res.status(401).json({ error: "Unauthorized" });
   }

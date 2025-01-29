@@ -28,6 +28,7 @@ import Genai from "./pages/genai";
 import IVR from "./components/ivr";
 import DialPad from "./components/dialpad";
 import ChatPage from "./pages/chat";
+import Ocr from "./pages/Ocr";
 
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   const cookie = Cookies.get("token");
@@ -61,69 +62,70 @@ export default function App() {
     getUser();
   }, []);
 
-   return (
-<>
-  <Routes>
-    <Route path="/ivr" element={<DialPad />} />
-    <Route path="/" element={<OnboardingCarousel />} />
-    <Route
-      path="/auth/register"
-      element={
-        <AuthRoute>
-          <SignUpForm />
-        </AuthRoute>
-      }
-    />
-    <Route
-      path="/auth/login"
-      element={
-        <AuthRoute>
-          <LoginForm />
-        </AuthRoute>
-      }
-    />
-    <Route
-      path="/dashboard"
-      element={
-        <ProtectedRoute>
-          <Dashboard />
-        </ProtectedRoute>
-      }
-    >
-      <Route index element={<Home />} />
-      <Route path="accept-invitation" element={<InvitationPage />} />
-      <Route path="ai" element={<SearchScreen />} />
-      <Route path="ai/consent" element={<ConsentUI />} />
-      <Route path="ai/ask" element={<Genai />} />
-      <Route path="ai/fam" element={<ReviewPage />} />
-      <Route path="notifications" element={<NotificationsScreen />} />
-      <Route path="profile" element={<UserProfile />} />
-      <Route path="friends" element={<FriendFinder />} />
-      <Route path="test" element={<AudioRecorder />} />
-      <Route path="editor" element={<PhotoEditor />} />
-      <Route path="creategroup" element={<GroupPage />} />
-      <Route path="createcapsule/suggestions" element={<Suggestions />} />
-      <Route path="createcapsule" element={<CapsulePage />} />
-      <Route path="unlocking/:id" element={<Unlocking />} />
-      <Route path="capsule/:id" element={<Capsule />} />
-    </Route>
-    <Route
-      path="story/:id"
-      element={
-        <ProtectedRoute>
-          <Story />
-        </ProtectedRoute>
-      }
-    />
-    <Route
-      path="/chat"
-      element={
-        <ProtectedRoute>
-          <ChatPage />
-        </ProtectedRoute>
-      }
-    />
-  </Routes>
-</>
+  return (
+    <>
+      <Routes>
+        <Route path="/ivr" element={<DialPad />} />
+        <Route path="/ocr" element={<Ocr />} />
+        <Route path="/" element={<OnboardingCarousel />} />
+        <Route
+          path="/auth/register"
+          element={
+            <AuthRoute>
+              <SignUpForm />
+            </AuthRoute>
+          }
+        />
+        <Route
+          path="/auth/login"
+          element={
+            <AuthRoute>
+              <LoginForm />
+            </AuthRoute>
+          }
+        />
+        <Route
+          path="/dashboard"
+          element={
+            <ProtectedRoute>
+              <Dashboard />
+            </ProtectedRoute>
+          }
+        >
+          <Route index element={<Home />} />
+          <Route path="accept-invitation" element={<InvitationPage />} />
+          <Route path="ai" element={<SearchScreen />} />
+          <Route path="ai/consent" element={<ConsentUI />} />
+          <Route path="ai/ask" element={<Genai />} />
+          <Route path="ai/fam" element={<ReviewPage />} />
+          <Route path="notifications" element={<NotificationsScreen />} />
+          <Route path="profile" element={<UserProfile />} />
+          <Route path="friends" element={<FriendFinder />} />
+          <Route path="test" element={<AudioRecorder />} />
+          <Route path="editor" element={<PhotoEditor />} />
+          <Route path="creategroup" element={<GroupPage />} />
+          <Route path="createcapsule/suggestions" element={<Suggestions />} />
+          <Route path="createcapsule" element={<CapsulePage />} />
+          <Route path="unlocking/:id" element={<Unlocking />} />
+          <Route path="capsule/:id" element={<Capsule />} />
+        </Route>
+        <Route
+          path="story/:id"
+          element={
+            <ProtectedRoute>
+              <Story />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/chat"
+          element={
+            <ProtectedRoute>
+              <ChatPage />
+            </ProtectedRoute>
+          }
+        />
+      </Routes>
+    </>
   );
 }
