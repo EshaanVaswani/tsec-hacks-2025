@@ -19,6 +19,8 @@ const userSchema = new Schema<IUser>({
   avatar: { type: String },
   aiChatSessions: { type: [String], default: [] },
   lawyerChatSessions: { type: [String], default: [] },
+  isOnline: { type: Boolean, default: false },
+  lastOnline: { type: String },
   createdAt: { type: Date, default: Date.now },
   updatedAt: { type: Date, default: Date.now },
 });

@@ -169,3 +169,8 @@ export const sendVerificationCode = TryCatch(
     });
   }
 );
+
+export const getMyDetails = TryCatch(async (req: Request, res: Response) => {
+  const user = await User.findById(req.user?._id);
+  res.status(200).json({ success: true, user });
+});

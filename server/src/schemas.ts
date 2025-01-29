@@ -16,6 +16,8 @@ export interface IUser extends Document {
   updatedAt: Date;
   aiChatSessions: string[];
   lawyerChatSessions: string[];
+  isOnline: boolean;
+  lastOnline: string;
 }
 
 export interface aiChat extends Document {
@@ -24,7 +26,7 @@ export interface aiChat extends Document {
 
 export interface IMessage extends Document {
   sender: string;
-  reciever: string;
+  receiver: string;
   content: string;
   timestamp: Date;
   isRead: boolean;
