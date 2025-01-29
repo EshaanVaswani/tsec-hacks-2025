@@ -31,12 +31,14 @@ import { Input } from "./ui/input";
 import { Label } from "./ui/label";
 import { Progress } from "./ui/progress";
 import { Separator } from "./ui/separator";
+import { FileUpload } from "./file-upload";
 
 type Step = "auth" | "phone" | "profile" | "success";
 interface FormData {
    name: string;
    email: string;
    password: string;
+   avatar: File | null;
    phone: string;
    otp: string;
    username: string;
@@ -49,6 +51,7 @@ export function SignUpForm() {
       name: "",
       email: "",
       password: "",
+      avatar: null,
       phone: "",
       otp: "",
       username: "",
@@ -79,13 +82,19 @@ export function SignUpForm() {
    const handleRegister = async () => {
       setLoading(true);
 
+      const formData1 = new FormData();
+
+      formData1.append("name", formData.name);
+      formData1.append("email", formData.email);
+      formData1.append("password", formData.password);
+      formData1.append("phone", formData.phone);
+
+      if (formData.avatar && formData.avatar instanceof File) {
+         formData1.append("avatar", formData.avatar);
+      }
+
       try {
-         const res = await api.post("/api/auth/sign-up", {
-            name: formData.name,
-            email: formData.email,
-            password: formData.password,
-            phone: formData.phone,
-         });
+         const res = await api.post("/api/user/sign-up", formData1);
 
          if (res.data.success) {
             toast.success(res.data.message);
@@ -125,7 +134,7 @@ export function SignUpForm() {
       setLoading(true);
 
       try {
-         const res = await api.post("/api/auth/verify", {
+         const res = await api.post("/api/user/verify", {
             email: formData.email,
             verificationCode: formData.otp,
          });
@@ -162,9 +171,8 @@ export function SignUpForm() {
       setLoading(true);
 
       try {
-         const res = await api.post("/api/auth/username", {
+         const res = await api.post("/api/user/username", {
             username: formData.username,
-            email: formData.email,
          });
 
          if (res.data.success) {
@@ -180,6 +188,23 @@ export function SignUpForm() {
 
    const renderAuthStep = () => (
       <CardContent className="space-y-4">
+         <div>
+            <FileUpload
+               fieldChange={(files) => {
+                  if (files.length > 0) {
+                     setFormData((prev) => ({
+                        ...prev,
+                        avatar: files[0],
+                     }));
+                  }
+               }}
+               mediaUrl=""
+               placeholder="Upload your profile picture"
+               acceptedTypes="image/*"
+               containerClassName="h-24 w-24 mx-auto"
+            />
+         </div>
+
          <div className="space-y-2">
             <Label htmlFor="name">Name</Label>
             <div className="relative">
@@ -295,8 +320,17 @@ export function SignUpForm() {
             />
             Google
          </Button> */}
-         <p className="text-sm text-center text-secondary-foreground">Already have an account ? <span className="text-primary" onClick={()=>{navigate('/auth/login')}}>Login </span></p>
-
+         <p className="text-sm text-center text-secondary-foreground">
+            Already have an account ?{" "}
+            <span
+               className="text-primary"
+               onClick={() => {
+                  navigate("/auth/login");
+               }}
+            >
+               Login{" "}
+            </span>
+         </p>
       </CardContent>
    );
 
