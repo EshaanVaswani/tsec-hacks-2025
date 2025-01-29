@@ -179,6 +179,24 @@ export const sendVerificationCode = TryCatch(
 );
 
 export const getMyDetails = TryCatch(async (req: Request, res: Response) => {
-  const user = await User.findById(req.user?._id);
-  res.status(200).json({ success: true, user });
+   const user = await User.findById(req.user?._id);
+   res.status(200).json({ success: true, user });
 });
+
+export const updateUsername = TryCatch(
+   async (req: Request, res: Response, next: NextFunction) => {
+      const { username } = req.body;
+
+      const updatedUser = await User.findByIdAndUpdate(
+         req.user._id,
+         { username },
+         { new: true }
+      );
+
+      return res.status(200).json({
+         success: true,
+         message: "Username updated successfully",
+         updatedUser,
+      });
+   }
+);

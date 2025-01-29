@@ -134,7 +134,7 @@ export function SignUpForm() {
       setLoading(true);
 
       try {
-         const res = await api.post("/api/auth/verify", {
+         const res = await api.post("/api/user/verify", {
             email: formData.email,
             verificationCode: formData.otp,
          });
@@ -171,9 +171,8 @@ export function SignUpForm() {
       setLoading(true);
 
       try {
-         const res = await api.post("/api/auth/username", {
+         const res = await api.post("/api/user/username", {
             username: formData.username,
-            email: formData.email,
          });
 
          if (res.data.success) {
