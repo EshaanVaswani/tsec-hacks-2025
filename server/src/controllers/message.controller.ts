@@ -61,16 +61,29 @@ export const getRecentChats = TryCatch(async (req, res, next) => {
     }
   });
 
+  const currentUser = await User.findById(userId);
+
+  if (!currentUser) {
+    return res.status(404).json({ error: "User not found" });
+  }
+
   // console.log("Chat Map:", chatMap);
 
   // Step 3: Fetch user details for unique users
   const userIds = Object.keys(chatMap);
-  const users = await User.find({ _id: { $in: userIds } });
+
+  let users;
+
+  if(currentUser.role === "professional") {
+    users = await User.find({ _id: { $in: userIds }, role: "user" });
+  } else if(currentUser.role === "user") {
+    users = await User.find({ _id: { $in: userIds }, role: "professional" });
+  }
 
   // console.log("Users fetched:", users);
 
   // Step 4: Combine user details with message information
-  const formattedChats = users.map((user) => ({
+  const formattedChats = users?.map((user) => ({
     id: user._id,
     username: user.username,
     isOnline: user.isOnline,
@@ -78,13 +91,13 @@ export const getRecentChats = TryCatch(async (req, res, next) => {
   }));
 
   // Sort the chats by last message time
-  formattedChats.sort(
+  formattedChats?.sort(
     (a, b) =>
       new Date(b.lastMessageTime).getTime() -
       new Date(a.lastMessageTime).getTime()
   );
 
-  const final = users.map((user) => ({
+  const final = users?.map((user) => ({
     _id: user._id,
     username: user.username,
     isOnline: user.isOnline,

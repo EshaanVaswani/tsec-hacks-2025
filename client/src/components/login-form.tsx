@@ -45,6 +45,7 @@ export function LoginForm() {
   const navigate = useNavigate();
 
   const { setUser } = useAuth();
+  const { setUser: setUser2 } = useUser();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -79,6 +80,7 @@ export function LoginForm() {
       if (res.data.success) {
         toast.success(res.data.message);
         setUser(res.data.user);
+        setUser2(res.data.user);
 
         if (res.data.user.isVerified) {
           navigate("/dashboard");
