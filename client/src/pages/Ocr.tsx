@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { createWorker } from "tesseract.js";
 import { FileText, Upload, Loader2 } from "lucide-react";
+import { MarkdownRenderer } from "@/components/markdown-renderer";
 
 function Ocr() {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
@@ -28,7 +29,7 @@ function Ocr() {
       await worker.terminate();
 
       // Then send the text for summarization
-      const response = await fetch("http://localhost:5000/api/summarize", {
+      const response = await fetch("http://localhost:5000/api/analyze", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -41,9 +42,18 @@ function Ocr() {
       }
 
       const result = await response.json();
+      console.log(result);
       setOcrText(
-        `Original Text:\n\n${result.original_text}\n\nSummary:\n\n${result.summary}`
+        `Original Text:\n\n${result.original_text}\n\n` +
+        `Summary:\n\n${result.summary}\n\n` +
+        `Suggestions:\n\n${result.legal_analysis.analysis}\n\n` +
+        `References:\n\n${result.legal_analysis.cases_referenced.map((legalCase:any) => 
+          `• ${legalCase.source} (${legalCase.category}) - PDF: ${legalCase.pdf_path}`
+        ).join('\n')}`
       );
+      
+      
+      
     } catch (error) {
       console.error("Error:", error);
       setOcrText("Error processing image. Please try again.");
@@ -125,7 +135,7 @@ function Ocr() {
                 </label>
                 <div className="bg-gray-50 rounded-lg p-4">
                   <pre className="whitespace-pre-wrap text-sm text-gray-800">
-                    {ocrText}
+                  <MarkdownRenderer content={ocrText} />
                   </pre>
                 </div>
               </div>
