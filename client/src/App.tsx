@@ -28,6 +28,7 @@ import Genai from "./pages/genai";
 import IVR from "./components/ivr";
 import DialPad from "./components/dialpad";
 import ChatPage from "./pages/chat";
+import DocsTools from "./components/doctools";
 
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   const cookie = Cookies.get("token");
@@ -64,6 +65,7 @@ export default function App() {
    return (
 <>
   <Routes>
+    <Route path="/actionboard" element={<DocsTools/>}/>
     <Route path="/ivr" element={<DialPad />} />
     <Route path="/" element={<OnboardingCarousel />} />
     <Route
