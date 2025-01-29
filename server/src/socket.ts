@@ -6,7 +6,7 @@ import { User } from "./models/user.models";
 export const setupSocket = (server: HTTPServer) => {
   const io = new Server(server, {
     cors: {
-      origin: "*",
+      origin: process.env.CORS_ORIGIN,
       methods: ["GET", "POST"],
       credentials: true,
     },
@@ -20,6 +20,7 @@ export const setupSocket = (server: HTTPServer) => {
     // Handle user connection
     socket.on("user_connected", async (userId: string) => {
       userSocketMap.set(userId, socket.id);
+
       await User.findByIdAndUpdate(userId, { isOnline: true });
       console.log("Status change login:", userId, socket.id);
 

@@ -79,7 +79,14 @@ export default function App() {
             </AuthRoute>
           }
         />
-        <Route path="/chat" element={<ChatPage />} />
+        <Route
+          path="/chat"
+          element={
+            <ProtectedRoute>
+              <ChatPage />
+            </ProtectedRoute>
+          }
+        />
 
         <Route
           path="/dashboard"

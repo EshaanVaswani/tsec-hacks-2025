@@ -1,12 +1,7 @@
-// import { User, Message } from "@/data";
+import { User, Message } from "@/data";
 import { getUser } from "@/services/user";
 import { create } from "zustand";
-import {
-  User as BackendUser,
-  Message as BackendMessage,
-  Message,
-  User,
-} from "@/types";
+import { User as BackendUser, Message as BackendMessage } from "@/types";
 import { generateAvatarUrl } from "@/lib/dicebar";
 import { getMessages } from "@/services/message";
 
