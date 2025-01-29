@@ -1,13 +1,21 @@
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
-import "./index.css";
+import "./global.css";
 import App from "./App.tsx";
 import { BrowserRouter } from "react-router-dom";
+import { ThemeProvider } from "@/components/theme-provider";
+import { Toaster } from "./components/ui/sonner.tsx";
+import ScreenshotPreventionWrapper from "./utils/PreventScreenshot.tsx";
 
 createRoot(document.getElementById("root")!).render(
-   <StrictMode>
-      <BrowserRouter>
-         <App />
-      </BrowserRouter>
-   </StrictMode>
+  <StrictMode>
+    <BrowserRouter>
+      <ThemeProvider defaultTheme="dark" storageKey="vite-ui-theme">
+        <ScreenshotPreventionWrapper>
+          <Toaster />
+          <App />
+        </ScreenshotPreventionWrapper>
+      </ThemeProvider>
+    </BrowserRouter>
+  </StrictMode>
 );
