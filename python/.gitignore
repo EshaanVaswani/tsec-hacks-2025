@@ -8,13 +8,14 @@ __pycache__/
 .Python
 env/
 venv/
+venvo/
 ENV/
 VENV/
 dist/
 build/
 *.egg-info/
 python=3.12/
-
+categories/
 # IDE / Editor files
 .vscode/
 .idea/
