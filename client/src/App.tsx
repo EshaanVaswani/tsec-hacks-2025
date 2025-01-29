@@ -25,6 +25,10 @@ import DialPad from "./components/dialpad";
 import ChatPage from "./pages/chat";
 import DocumentSummarizer from "./pages/document-summarizer";
 import Ocr from "./pages/Ocr";
+import Templates from "./pages/templates";
+import Copyright from "./pages/Copyright";
+import NonDisclosure from "./pages/NonDisclosure";
+import NDAAgreement from "./pages/NonDisclosure";
 
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   const cookie = Cookies.get("token");
@@ -60,69 +64,63 @@ export default function App() {
 
   return (
     <>
-    <Routes>
-  <Route path="/ivr" element={<DialPad />} />
-  <Route path="/ocr" element={<Ocr />} />
-  <Route path="/" element={<OnboardingCarousel />} />
-  
-  <Route
-    path="/auth/register"
-    element={
-      <AuthRoute>
-        <SignUpForm />
-      </AuthRoute>
-    }
-  />
-  <Route
-    path="/auth/login"
-    element={
-      <AuthRoute>
-        <LoginForm />
-      </AuthRoute>
-    }
-  />
+      <Routes>
+        <Route path="/ivr" element={<DialPad />} />
+        <Route path="/ocr" element={<Ocr />} />
+        <Route path="/" element={<OnboardingCarousel />} />
 
-  <Route
-    path="/dashboard"
-    element={
-      <ProtectedRoute>
-        <Dashboard />
-      </ProtectedRoute>
-    }
-  >
-    <Route index element={<Home />} />
-    <Route path="document-summarizer" element={<DocumentSummarizer />} />
-    <Route path="accept-invitation" element={<InvitationPage />} />
-    <Route path="ai" element={<SearchScreen />} />
-    <Route path="ai/consent" element={<ConsentUI />} />
-    <Route path="ai/ask" element={<Genai />} />
-    <Route path="ai/fam" element={<ReviewPage />} />
-    <Route path="notifications" element={<NotificationsScreen />} />
-    <Route path="profile" element={<UserProfile />} />
-    <Route path="test" element={<AudioRecorder />} />
-    <Route path="community" element={<GroupPage />} />
-    <Route path="editor" element={<PhotoEditor />} />
-  </Route>
+        <Route
+          path="/auth/register"
+          element={
+            <AuthRoute>
+              <SignUpForm />
+            </AuthRoute>
+          }
+        />
+        <Route
+          path="/auth/login"
+          element={
+            <AuthRoute>
+              <LoginForm />
+            </AuthRoute>
+          }
+        />
 
-  <Route
-    path="story/:id"
-    element={
-      <ProtectedRoute>
-        <Story />
-      </ProtectedRoute>
-    }
-  />
-  
-  <Route
-    path="/chat"
-    element={
-      <ProtectedRoute>
-        <ChatPage />
-      </ProtectedRoute>
-    }
-  />
-</Routes>
-  
+        <Route
+          path="/dashboard"
+          element={
+            <ProtectedRoute>
+              <Dashboard />
+            </ProtectedRoute>
+          }
+        >
+          <Route index element={<Home />} />
+          <Route path="document-summarizer" element={<DocumentSummarizer />} />
+          <Route path="accept-invitation" element={<InvitationPage />} />
+          <Route path="ai" element={<SearchScreen />} />
+          <Route path="ai/consent" element={<ConsentUI />} />
+          <Route path="ai/ask" element={<Genai />} />
+          <Route path="ai/fam" element={<ReviewPage />} />
+          <Route path="notifications" element={<NotificationsScreen />} />
+          <Route path="profile" element={<UserProfile />} />
+          <Route path="test" element={<AudioRecorder />} />
+          <Route path="community" element={<GroupPage />} />
+          <Route path="editor" element={<PhotoEditor />} />
+          <Route path="chat" element={<ChatPage />} />
+          <Route path="templates" element={<Templates />} />
+          <Route path="templates/copyright" element={<Copyright />} />
+          <Route path="templates/nondisclosure" element={<NDAAgreement />} />
+        </Route>
+
+        <Route
+          path="story/:id"
+          element={
+            <ProtectedRoute>
+              <Story />
+            </ProtectedRoute>
+          }
+        />
+      </Routes>
     </>
   );
 }
