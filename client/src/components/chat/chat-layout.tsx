@@ -1,4 +1,3 @@
-"use client";
 import React, { useCallback, useEffect, useState } from "react";
 import {
   ResizableHandle,
@@ -12,7 +11,7 @@ import useChatStore from "@/hooks/useChatStore";
 import { useSocket } from "@/hooks/useSocket";
 import { Socket } from "socket.io-client";
 import axios from "axios";
-import {Message as BackendMessage} from "@/types";
+import { Message as BackendMessage } from "@/types";
 
 interface ChatLayoutProps {
   defaultLayout: number[] | undefined;
@@ -26,7 +25,7 @@ export function ChatLayout({
   navCollapsedSize,
 }: ChatLayoutProps) {
   const [isCollapsed, setIsCollapsed] = React.useState(defaultCollapsed);
-  const {selectedUser} = useChatStore();
+  const { selectedUser } = useChatStore();
   const [isMobile, setIsMobile] = useState(false);
 
   useEffect(() => {
@@ -48,40 +47,44 @@ export function ChatLayout({
 
   const socket = useSocket();
 
-  const [recentChats, setRecentChats] = useState<{
-    _id: string;
-    username: string;
-    isOnline: boolean;
-    lastMessage: BackendMessage;
-    lastMessageTime: string;
-    name : string
-  }[]>([]);
+  const [recentChats, setRecentChats] = useState<
+    {
+      _id: string;
+      username: string;
+      isOnline: boolean;
+      lastMessage: BackendMessage;
+      lastMessageTime: string;
+      name: string;
+    }[]
+  >([]);
 
-  const {messages} = useChatStore();
+  const { messages } = useChatStore();
 
-  const handleRecentChats = useCallback(async()=>{
+  const handleRecentChats = useCallback(async () => {
     try {
-      const res = await axios.get(`${import.meta.env.VITE_BACKEND_URL}/api/messages/recent-chats`,{
-        withCredentials : true
-      })
-      console.log(res.data)
-      setRecentChats(res.data)
+      const res = await axios.get(
+        `${import.meta.env.VITE_BACKEND_URL}/api/messages/recent-chats`,
+        {
+          withCredentials: true,
+        }
+      );
+      console.log(res.data);
+      setRecentChats(res.data);
     } catch (error) {
-      console.log(error)
+      console.log(error);
     }
-  },[])
+  }, []);
 
-  useEffect(()=>{
-    handleRecentChats()
-  },[messages.length])
-
+  useEffect(() => {
+    handleRecentChats();
+  }, [messages.length]);
 
   return (
     <ResizablePanelGroup
       direction="horizontal"
       onLayout={(sizes: number[]) => {
         document.cookie = `react-resizable-panels:layout=${JSON.stringify(
-          sizes,
+          sizes
         )}`;
       }}
       className="h-full items-stretch"
@@ -95,46 +98,57 @@ export function ChatLayout({
         onCollapse={() => {
           setIsCollapsed(true);
           document.cookie = `react-resizable-panels:collapsed=${JSON.stringify(
-            true,
+            true
           )}`;
         }}
         onExpand={() => {
           setIsCollapsed(false);
           document.cookie = `react-resizable-panels:collapsed=${JSON.stringify(
-            false,
+            false
           )}`;
         }}
         className={cn(
           isCollapsed &&
-            "min-w-[50px] md:min-w-[70px] transition-all duration-300 ease-in-out",
+            "min-w-[50px] md:min-w-[70px] transition-all duration-300 ease-in-out"
         )}
       >
         <Sidebar
           isCollapsed={isCollapsed || isMobile}
-          chats={recentChats.map((user) => ({
-            name: user?.name,
-            _id: user._id,
-            isOnline: user.isOnline,
-            lastMessage: user.lastMessage.content,
-            lastMessageTime: user.lastMessageTime,
-            username: user.username,
-            variant: selectedUser?._id === user._id ? "secondary" : "ghost",
-          })) as []}
-
+          chats={
+            recentChats.map((user) => ({
+              name: user?.name,
+              _id: user._id,
+              isOnline: user.isOnline,
+              lastMessage: user.lastMessage.content,
+              lastMessageTime: user.lastMessageTime,
+              username: user.username,
+              variant: selectedUser?._id === user._id ? "secondary" : "ghost",
+            })) as []
+          }
           isMobile={isMobile}
         />
       </ResizablePanel>
       <ResizableHandle withHandle />
       <ResizablePanel defaultSize={defaultLayout[1]} minSize={30}>
-        {selectedUser ? <Chat
-          socket={socket as Socket}
-          messages={selectedUser?.messages!}
-          selectedUser={selectedUser}
-          isMobile={isMobile}
-        /> : <div className="w-full h-full flex flex-col justify-center items-center gap-6">
-              <img src="/empty-chat.jpg"  alt="empty-chat" className="w-1/2 mx-auto opacity-90 rounded-full"/>
-              <h1 className="text-center text-2xl font-semibold text-gray-500">Select a chat to start messaging</h1>
-          </div>}
+        {selectedUser ? (
+          <Chat
+            socket={socket as Socket}
+            messages={selectedUser?.messages!}
+            selectedUser={selectedUser}
+            isMobile={isMobile}
+          />
+        ) : (
+          <div className="w-full h-full flex flex-col justify-center items-center gap-6">
+            <img
+              src="/empty-chat.jpg"
+              alt="empty-chat"
+              className="w-1/2 mx-auto opacity-90 rounded-full"
+            />
+            <h1 className="text-center text-2xl font-semibold text-gray-500">
+              Select a chat to start messaging
+            </h1>
+          </div>
+        )}
       </ResizablePanel>
     </ResizablePanelGroup>
   );
