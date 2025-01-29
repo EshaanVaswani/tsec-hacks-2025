@@ -18,7 +18,7 @@ interface FormData {
   fullName: string;
 }
 
-function App() {
+function Copyright() {
   const [formData, setFormData] = useState<FormData>({
     requesterName: "",
     copyrightOwner: "",
@@ -245,4 +245,4 @@ function App() {
   );
 }
 
-export default App;
+export default Copyright;

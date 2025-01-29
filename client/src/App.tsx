@@ -1,34 +1,33 @@
+import Cookies from "js-cookie";
+import { useEffect } from "react";
 import { Navigate, Route, Routes } from "react-router-dom";
+import AudioRecorder from "./components/audio-recorder";
 import { OnboardingCarousel } from "./components/carousel-demo";
+import DialPad from "./components/dialpad";
+import { useUser } from "./components/hooks/use-user";
 import PhotoEditor from "./components/image-editor/editor";
+import { LoginForm } from "./components/login-form";
+import ReviewPage from "./components/review-page";
 import { SignUpForm } from "./components/sign-up-form";
 import UserProfile from "./components/user-profile";
+import { api } from "./lib/api";
+import { User } from "./lib/types";
 import InvitationPage from "./pages/acceptInvitation";
+import ChatPage from "./pages/chat";
+import ConsentUI from "./pages/consentui";
+import Copyright from "./pages/Copyright";
 import GroupPage from "./pages/creategroup";
 import Dashboard from "./pages/dashboard";
-import Home from "./pages/home";
-import NotificationsScreen from "./pages/notifications";
-import SearchScreen from "./pages/search";
-import Cookies from "js-cookie";
-import { LoginForm } from "./components/login-form";
-import AudioRecorder from "./components/audio-recorder";
-import ReviewPage from "./components/review-page";
-import { useEffect } from "react";
-import { User } from "./lib/types";
-import { api } from "./lib/api";
-import { useUser } from "./components/hooks/use-user";
-import Story from "./pages/story";
-import ConsentUI from "./pages/consentui";
-import Genai from "./pages/genai";
-import IVR from "./components/ivr";
-import DialPad from "./components/dialpad";
-import ChatPage from "./pages/chat";
 import DocumentSummarizer from "./pages/document-summarizer";
+import Genai from "./pages/genai";
+import Home from "./pages/home";
+import IPFSUpload from "./pages/ipfsUpload";
+import SimplePartnershipDeed from "./pages/NonDisclosure";
+import NotificationsScreen from "./pages/notifications";
 import Ocr from "./pages/Ocr";
+import SearchScreen from "./pages/search";
+import Story from "./pages/story";
 import Templates from "./pages/templates";
-import Copyright from "./pages/Copyright";
-import NonDisclosure from "./pages/NonDisclosure";
-import NDAAgreement from "./pages/NonDisclosure";
 
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   const cookie = Cookies.get("token");
@@ -106,10 +105,12 @@ export default function App() {
           <Route path="test" element={<AudioRecorder />} />
           <Route path="community" element={<GroupPage />} />
           <Route path="editor" element={<PhotoEditor />} />
-          <Route path="chat" element={<ChatPage />} />
           <Route path="templates" element={<Templates />} />
+          <Route
+            path="templates/nondisclosure"
+            element={<SimplePartnershipDeed />}
+          />
           <Route path="templates/copyright" element={<Copyright />} />
-          <Route path="templates/nondisclosure" element={<NDAAgreement />} />
         </Route>
 
         <Route
@@ -117,6 +118,23 @@ export default function App() {
           element={
             <ProtectedRoute>
               <Story />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/chat"
+          element={
+            <ProtectedRoute>
+              <ChatPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/ipfs"
+          element={
+            <ProtectedRoute>
+              <IPFSUpload />
             </ProtectedRoute>
           }
         />
