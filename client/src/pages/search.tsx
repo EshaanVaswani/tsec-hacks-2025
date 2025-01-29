@@ -1,16 +1,15 @@
-// import SearchBar from "../components/SearchBar"
-// import ImageResults from "../components/ImageResults"
-// import PeopleResults from "../components/PeopleResults"
-// import TimeCapsules from "../components/TimeCapsules"
-// import axios from "axios";
-// import { AnimatePresence, motion } from "framer-motion"
-// import { useState, useEffect, useRef } from "react"
-// import { Loader2, Send } from "lucide-react"
-// import { Button } from "@/components/ui/button"
-// import { Textarea } from "@/components/ui/textarea"
-// import { useToast } from "@/hooks/use-toast";
-// import { Input } from "@/components/ui/input";
-// import VoiceGenerator from "@/components/review-page";
+import SearchBar from "../components/SearchBar"
+import ImageResults from "../components/ImageResults"
+import PeopleResults from "../components/PeopleResults"
+import TimeCapsules from "../components/TimeCapsules"
+import axios from "axios";
+import { AnimatePresence, motion } from "framer-motion"
+import { useState, useEffect, useRef } from "react"
+import { Loader2, Send } from "lucide-react"
+import { Textarea } from "@/components/ui/textarea"
+import { useToast } from "@/hooks/use-toast";
+import { Input } from "@/components/ui/input";
+import VoiceGenerator from "@/components/review-page";
 
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
@@ -27,12 +26,12 @@ export default function SearchPage() {
         <Button className="w-full font-serif" onClick={()=>{navigate('fam')}}>fam</Button>
         <Button className="w-full" onClick={()=>{navigate('')}}>Record</Button>
       </div>
-      {/* <SearchBar />
+      <SearchBar />
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mt-8">
         <ImageResults />
         <PeopleResults />
       </div>
-      <TimeCapsules /> */}
+      <TimeCapsules />
     </div>
   )
 }

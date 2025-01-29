@@ -1,18 +1,14 @@
 import { Navigate, Route, Routes } from "react-router-dom";
 import { OnboardingCarousel } from "./components/carousel-demo";
-import FriendFinder from "./components/friend-finder";
 import PhotoEditor from "./components/image-editor/editor";
 import { SignUpForm } from "./components/sign-up-form";
 import UserProfile from "./components/user-profile";
 import InvitationPage from "./pages/acceptInvitation";
-import CapsulePage from "./pages/createcapsule";
 import GroupPage from "./pages/creategroup";
 import Dashboard from "./pages/dashboard";
 import Home from "./pages/home";
 import NotificationsScreen from "./pages/notifications";
 import SearchScreen from "./pages/search";
-import Suggestions from "./pages/suggestions";
-import Unlocking from "./pages/unlocking";
 import Cookies from "js-cookie";
 import { LoginForm } from "./components/login-form";
 import AudioRecorder from "./components/audio-recorder";
@@ -21,14 +17,13 @@ import { useEffect } from "react";
 import { User } from "./lib/types";
 import { api } from "./lib/api";
 import { useUser } from "./components/hooks/use-user";
-import Capsule from "./pages/capsule";
 import Story from "./pages/story";
 import ConsentUI from "./pages/consentui";
 import Genai from "./pages/genai";
 import IVR from "./components/ivr";
 import DialPad from "./components/dialpad";
 import ChatPage from "./pages/chat";
-import DocsTools from "./components/doctools";
+import DocumentSummarizer from "./pages/document-summarizer";
 
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   const cookie = Cookies.get("token");
@@ -65,7 +60,6 @@ export default function App() {
    return (
 <>
   <Routes>
-    <Route path="/actionboard" element={<DocsTools/>}/>
     <Route path="/ivr" element={<DialPad />} />
     <Route path="/" element={<OnboardingCarousel />} />
     <Route
@@ -93,6 +87,7 @@ export default function App() {
       }
     >
       <Route index element={<Home />} />
+      <Route path="document-summarizer" element={<DocumentSummarizer />} /> 
       <Route path="accept-invitation" element={<InvitationPage />} />
       <Route path="ai" element={<SearchScreen />} />
       <Route path="ai/consent" element={<ConsentUI />} />
@@ -100,31 +95,17 @@ export default function App() {
       <Route path="ai/fam" element={<ReviewPage />} />
       <Route path="notifications" element={<NotificationsScreen />} />
       <Route path="profile" element={<UserProfile />} />
-      <Route path="friends" element={<FriendFinder />} />
       <Route path="test" element={<AudioRecorder />} />
-      <Route path="editor" element={<PhotoEditor />} />
-      <Route path="creategroup" element={<GroupPage />} />
-      <Route path="createcapsule/suggestions" element={<Suggestions />} />
-      <Route path="createcapsule" element={<CapsulePage />} />
-      <Route path="unlocking/:id" element={<Unlocking />} />
-      <Route path="capsule/:id" element={<Capsule />} />
-    </Route>
-    <Route
-      path="story/:id"
-      element={
-        <ProtectedRoute>
-          <Story />
-        </ProtectedRoute>
-      }
-    />
-    <Route
-      path="/chat"
+      <Route path="community" element={<GroupPage />} />
+      <Route
+      path="chat"
       element={
         <ProtectedRoute>
           <ChatPage />
         </ProtectedRoute>
       }
     />
+    </Route>
   </Routes>
 </>
   );

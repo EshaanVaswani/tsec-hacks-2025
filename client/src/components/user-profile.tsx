@@ -1,16 +1,11 @@
 import { useState } from "react";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import {  SettingsIcon, Users } from "lucide-react";
-import PeepsModal from "./peeps-modal";
+import {  SettingsIcon } from "lucide-react";
 import SettingsModal from "./settings";
-import SharedWithYou from "./shared-with-you";
-import YouShared from "./you-shared";
 import { useUser } from "./hooks/use-user";
 
 export default function UserProfile() {
-   const [isPeepsModalOpen, setIsPeepsModalOpen] = useState(false);
    const [isSettingsModalOpen,setIsSettingsModalOpen]=useState(false)
    const { user } = useUser();
 
@@ -46,40 +41,16 @@ export default function UserProfile() {
                Settings
             </Button>
 
-            <Button
-               onClick={() => setIsPeepsModalOpen(true)}
-               variant="outline"
-               className="flex items-center w-full"
-            >
-               <Users className="mr-2 h-4 w-4" />
-               Peeps
-            </Button>
+           
          </div>
 
-         {/* Tabs */}
-         <Tabs defaultValue="shared-with-you" className="w-full">
-            <TabsList className="grid w-full grid-cols-2">
-               <TabsTrigger value="shared-with-you">
-                  Shared with you
-               </TabsTrigger>
-               <TabsTrigger value="you-shared">You shared</TabsTrigger>
-            </TabsList>
-            <TabsContent value="shared-with-you">
-               <SharedWithYou />
-            </TabsContent>
-            <TabsContent value="you-shared">
-               <YouShared />
-            </TabsContent>
-         </Tabs>
+        
 
          <SettingsModal
             isOpen={isSettingsModalOpen}
             onClose={() => setIsSettingsModalOpen(false)}
          />
-         <PeepsModal
-            isOpen={isPeepsModalOpen}
-            onClose={() => setIsPeepsModalOpen(false)}
-         />
+        
       </div>
    );
 }
