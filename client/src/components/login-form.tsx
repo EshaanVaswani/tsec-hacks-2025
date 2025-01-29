@@ -70,7 +70,7 @@ export function LoginForm() {
       setLoading(true);
 
       try {
-         const res = await api.post("/api/auth/login", {
+         const res = await api.post("/api/user/login", {
             email: formData.email,
             password: formData.password,
          });
@@ -219,7 +219,17 @@ export function LoginForm() {
             />
             Google
          </Button> */}
-         <p className="text-sm text-center text-secondary-foreground">Don't have an account ? <span className="text-primary" onClick={()=>{navigate('/auth/register')}}>Register here</span></p>
+         <p className="text-sm text-center text-secondary-foreground">
+            Don't have an account ?{" "}
+            <span
+               className="text-primary"
+               onClick={() => {
+                  navigate("/auth/register");
+               }}
+            >
+               Register here
+            </span>
+         </p>
       </CardContent>
    );
 
