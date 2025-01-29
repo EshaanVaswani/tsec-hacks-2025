@@ -4,7 +4,7 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Carousel, CarouselContent, CarouselItem } from "@/components/ui/carousel";
 import { motion } from "framer-motion";
-import { Unlock, Users, Palette, MoveRight } from "lucide-react";
+import {  MoveRight, Book, ShieldCheck, Newspaper, FileText, Scale } from "lucide-react";
 import { type CarouselApi } from "@/components/ui/carousel";
 
 const features = [
@@ -13,34 +13,50 @@ const features = [
     description:
       "",
     cta: "Thanks for downloading !",
-    image: "./yaadein.png",
+    image: "./logo.png",
   },
-  {
-    title: "Scheduled Unlocking",
-    description:
-      "Set a specific future date to reveal your time capsule, creating a surprise for yourself or your recipients.",
-    cta: "Start Planning",
-    icon: Unlock,
-    image: "./flowers.jpg",
-  },
-  {
-    title: "Media Upload & Collaboration",
-    description:
-      "Store messages, photos, videos, and audio. Collaborate with friends or family to create shared time capsules.",
-    cta: "Upload Memories",
-    icon: Users,
-    image: "./csipeeps.jpg",
-  },
-  {
-    title: "Personalized Themes & Notifications",
-    description:
-      "Customize with themes like 'Graduation' or 'Anniversary' and enjoy countdowns and reminders as the unlock date approaches.",
-    cta: "Customize Now",
-    icon: Palette,
-    image: "./themes.gif",
-  },
-];
-
+    {
+      title: "AI-Powered Legal Research",
+      description:
+        "Retrieve and summarize case laws, precedents, and statutes based on user queries, helping users understand legal contexts and draft accurate documents.",
+      cta: "Start Researching",
+      icon: Book,
+      image: "./ballet.jpg",
+    },
+    {
+      title: "Contract Risk Analysis & Compliance",
+      description:
+        "Identify high-risk clauses, suggest safer alternatives, and ensure compliance with regulations like GDPR and labor laws through AI-powered contract assessment.",
+      cta: "Analyze Contracts",
+      icon: ShieldCheck,
+      image: "./pen.jpg",
+    },
+    {
+      title: "Legal News Summarization",
+      description:
+        "Get AI-generated summaries of legal news tailored to specific regions or topics, keeping you informed about the latest legal developments.",
+      cta: "Stay Updated",
+      icon: Newspaper,
+      image: "./newspaper.jpg",
+    },
+    {
+      title: "Automated Court Form Assistance",
+      description:
+        "Simplify legal procedures by auto-filling court forms, reducing errors, and ensuring compliance with legal requirements.",
+      cta: "Fill Forms Easily",
+      icon: FileText,
+      image: "./pillars.jpg",
+    },
+    {
+      title: "Law Comparison & Updates",
+      description:
+        "Compare old legal documents with current laws to understand key changes and their implications.",
+      cta: "Compare Laws",
+      icon: Scale,
+      image: "./comparison.jpg",
+    },
+  ];
+  
 export function OnboardingCarousel() {
   const [api, setApi] = React.useState<CarouselApi | null>(null);
   const [currentSlide, setCurrentSlide] = React.useState(0);

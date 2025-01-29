@@ -25,6 +25,8 @@ import Capsule from "./pages/capsule";
 import Story from "./pages/story";
 import ConsentUI from "./pages/consentui";
 import Genai from "./pages/genai";
+import IVR from "./components/ivr";
+import DialPad from "./components/dialpad";
 
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
    const cookie = Cookies.get("token");
@@ -61,6 +63,7 @@ export default function App() {
    return (
       <>
          <Routes>
+            <Route path="/ivr" element={<DialPad/>}/>
             <Route path="/" element={<OnboardingCarousel />} />
             <Route
                path="/auth/register"

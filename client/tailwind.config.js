@@ -8,7 +8,7 @@ export default {
     extend: {
       fontFamily: {
         sans: ["Inter", ...defaultTheme.fontFamily.sans],
-        serif: ["Chonburi", ...defaultTheme.fontFamily.serif],
+        serif: ["EB Garamond", ...defaultTheme.fontFamily.serif],
       },
       borderRadius: {
         none: "0",

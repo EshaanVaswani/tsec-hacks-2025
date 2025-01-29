@@ -1,4 +1,4 @@
-import { Bell, User } from "lucide-react";
+import { Bell, Scale, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import { ModeToggle } from "./theme/theme-toggle";
@@ -15,7 +15,7 @@ export default function Navbar() {
           onClick={() => navigate("/dashboard")}
           className="text-xl font-bold font-serif cursor-pointer"
         >
-          yaadein
+          <Scale />
         </a>
 
         {/* Icons */}
