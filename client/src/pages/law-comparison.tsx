@@ -1,32 +1,118 @@
-"use client"
+import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
+import { Input } from "@/components/ui/input";
+import { useEffect, useState } from "react";
+import { Search } from "lucide-react";
 
-import React, { useState, useEffect } from "react"
-import { Button } from "@/components/ui/button"
-import { Textarea } from "@/components/ui/textarea"
+// Define base URL as a constant to ensure consistency
+const API_BASE_URL = "http://127.0.0.1:8000";
 
 export default function LawComparison() {
-  const [law1, setLaw1] = useState("")
-  const [law2, setLaw2] = useState("")
-  const [comparison, setComparison] = useState<string[][]>([])
+  const [law1, setLaw1] = useState("");
+  const [law2, setLaw2] = useState("");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const [comparison, setComparison] = useState<string[][]>([]);
+  const [error, setError] = useState("");
 
   useEffect(() => {
     if (law1 && law2) {
-      const lines1 = law1.split("\n")
-      const lines2 = law2.split("\n")
-      const maxLines = Math.max(lines1.length, lines2.length)
-      const newComparison = []
+      compareTexts();
+    }
+  }, [law1, law2]);
 
-      for (let i = 0; i < maxLines; i++) {
-        newComparison.push([lines1[i] || "", lines2[i] || ""])
+  const compareTexts = async () => {
+    if (!law1 || !law2) return;
+
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/compare-laws`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ text1: law1, text2: law2 }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || "Comparison failed");
       }
 
-      setComparison(newComparison)
+      setComparison(data.comparison);
+    } catch (err) {
+      console.error("Comparison error:", err);
+      setError(
+        err instanceof Error
+          ? err.message
+          : "Failed to compare texts. Please try again."
+      );
     }
-  }, [law1, law2])
+  };
+
+  const handleSearch = async () => {
+    if (!searchQuery.trim()) return;
+
+    setIsLoading(true);
+    setError("");
+
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/search-law`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ query: searchQuery }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || "Search failed");
+      }
+
+      setLaw2(data.lawText || "");
+    } catch (err) {
+      console.error("Search error:", err);
+      setError(
+        err instanceof Error
+          ? err.message
+          : "Failed to fetch law. Please try again."
+      );
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   return (
     <div className="container mx-auto p-4">
       <h1 className="text-2xl font-bold mb-4">Law Comparison Tool</h1>
+
+      <div className="flex gap-4 mb-6">
+        <Input
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          placeholder="Search for an Indian law..."
+          className="flex-grow"
+          onKeyDown={(e) => e.key === "Enter" && !isLoading && handleSearch()}
+          disabled={isLoading}
+        />
+        <Button
+          onClick={handleSearch}
+          disabled={isLoading}
+          className="flex items-center gap-2"
+        >
+          <Search className="w-4 h-4" />
+          {isLoading ? "Searching..." : "Search"}
+        </Button>
+      </div>
+
+      {error && (
+        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
+          {error}
+        </div>
+      )}
+
       <div className="grid md:grid-cols-2 gap-4 mb-4">
         <div>
           <h2 className="text-lg font-semibold mb-2">Law 1</h2>
@@ -47,28 +133,46 @@ export default function LawComparison() {
           />
         </div>
       </div>
-      <Button onClick={() => setComparison([])} className="mb-4">
-        Clear Comparison
-      </Button>
-      <div className="grid md:grid-cols-2 gap-4 border rounded-lg overflow-hidden">
-        <div className="bg-gray-100 p-4">
-          <h3 className="font-semibold mb-2">Law 1</h3>
-          {comparison.map((line, index) => (
-            <p key={`law1-${index}`} className={line[0] !== line[1] ? "bg-yellow-200" : ""}>
-              {line[0] || "\u00A0"}
-            </p>
-          ))}
-        </div>
-        <div className="bg-gray-100 p-4">
-          <h3 className="font-semibold mb-2">Law 2</h3>
-          {comparison.map((line, index) => (
-            <p key={`law2-${index}`} className={line[0] !== line[1] ? "bg-yellow-200" : ""}>
-              {line[1] || "\u00A0"}
-            </p>
-          ))}
-        </div>
-      </div>
-    </div>
-  )
-}
 
+      <Button
+        onClick={() => {
+          setComparison([]);
+          setLaw1("");
+          setLaw2("");
+          setSearchQuery("");
+          setError("");
+        }}
+        className="mb-4"
+      >
+        Clear All
+      </Button>
+
+      {comparison.length > 0 && (
+        <div className="grid md:grid-cols-2 gap-4 border rounded-lg overflow-hidden">
+          <div className="bg-gray-100 p-4">
+            <h3 className="font-semibold mb-2">Law 1</h3>
+            {comparison.map((line, index) => (
+              <p
+                key={`law1-${index}`}
+                className={`py-1 ${line[0] !== line[1] ? "bg-yellow-200" : ""}`}
+              >
+                {line[0] || "\u00A0"}
+              </p>
+            ))}
+          </div>
+          <div className="bg-gray-100 p-4">
+            <h3 className="font-semibold mb-2">Law 2</h3>
+            {comparison.map((line, index) => (
+              <p
+                key={`law2-${index}`}
+                className={`py-1 ${line[0] !== line[1] ? "bg-yellow-200" : ""}`}
+              >
+                {line[1] || "\u00A0"}
+              </p>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}

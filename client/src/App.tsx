@@ -28,6 +28,7 @@ import Ocr from "./pages/Ocr";
 import SearchScreen from "./pages/search";
 import Story from "./pages/story";
 import Templates from "./pages/templates";
+import LawComparison from "./pages/law-comparison";
 
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   const cookie = Cookies.get("token");
@@ -106,10 +107,12 @@ export default function App() {
           <Route path="community" element={<GroupPage />} />
           <Route path="editor" element={<PhotoEditor />} />
           <Route path="templates" element={<Templates />} />
+          <Route path="compare" element={<LawComparison />} />
           <Route
             path="templates/nondisclosure"
             element={<SimplePartnershipDeed />}
           />
+
           <Route path="templates/copyright" element={<Copyright />} />
         </Route>
 
