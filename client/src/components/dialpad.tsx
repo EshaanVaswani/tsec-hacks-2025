@@ -1,131 +1,266 @@
-import { useState, useEffect } from 'react';
-import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
-import { Speaker, Mic } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+import { CallInterface } from "./call-interface";
+import { Keypad } from "./keypad";
+import { GeminiResponse, IVRState } from "@/lib/types";
+import { useNavigate } from "react-router-dom";
+import { api } from "@/lib/api";
+import * as Tone from "tone";
 
-const categories = [
-  { id: 1, label: "Labour Law", hindiLabel: "श्रम कानून" },
-  { id: 2, label: "Copyright", hindiLabel: "कॉपीराइट" },
-  { id: 3, label: "Real Estate Regulation & Development Act", hindiLabel: "रियल एस्टेट अधिनियम" },
-  { id: 4, label: "GDPR", hindiLabel: "जीडीपीआर" },
-  { id: 5, label: "Foreign Trade & Customs Act", hindiLabel: "विदेश व्यापार अधिनियम" },
-];
+function IVR() {
+   const navigate = useNavigate();
+   const [state, setState] = useState<IVRState>({
+      currentLevel: 0,
+      language: "en",
+      isSpeaking: false,
+      isListening: false,
+      message: "",
+      callDuration: 0,
+      currentPath: [],
+      lastResponse: "",
+      context: [], // Add conversation history
+   });
 
-const IVRChatbot = () => {
-  const [language, setLanguage] = useState(null);
-  const [selectedCategory, setSelectedCategory] = useState(null);
-  const [responseText, setResponseText] = useState("");
-  const [isSpeaking, setIsSpeaking] = useState(false);
-  const [isListening, setIsListening] = useState(false);
+   const synthRef = useRef<SpeechSynthesis | null>(null);
+   const recognitionRef = useRef<SpeechRecognition | null>(null);
+   const [voicesLoaded, setVoicesLoaded] = useState(false);
+   const intervalRef = useRef<number | null>(null);
 
-  useEffect(() => {
-    // Speak welcome message on load
-    speak("Welcome! Choose language. Bhasha chuniyai. 1 for English, 2 for Hindi. Ek angrezi ke liye, do hindi ke liye.");
-  }, []);
+   const [isCalling, setIsCalling] = useState(true);
+   const [isKeypadOpen, setIsKeypadOpen] = useState(false);
+   const [isMuted, setIsMuted] = useState(false);
+   const [isSpeakerOn, setIsSpeakerOn] = useState(false);
 
-  const speak = (text) => {
-    if (!text) return;
-    setIsSpeaking(true);
-    const utterance = new SpeechSynthesisUtterance(text);
-    utterance.lang = language === "hindi" ? "hi-IN" : "en-IN";
-    utterance.onend = () => setIsSpeaking(false);
-    speechSynthesis.speak(utterance);
-  };
+   // Create audio context and oscillators for DTMF tones
+   const audioContextRef = useRef<AudioContext | null>(null);
+   const oscillatorsRef = useRef<{ [key: string]: OscillatorNode[] }>({});
 
-  const handleLanguageSelection = (lang) => {
-    setLanguage(lang);
-    const langMessage = lang === "hindi"
-      ? "आपने हिंदी चुना है। श्रेणी चुनें।"
-      : "You have selected English. Choose a category.";
-    speak(langMessage);
-  };
+   const DTMF_FREQUENCIES: { [key: string]: number[] } = {
+      '1': [697, 1209], '2': [697, 1336], '3': [697, 1477],
+      '4': [770, 1209], '5': [770, 1336], '6': [770, 1477],
+      '7': [852, 1209], '8': [852, 1336], '9': [852, 1477],
+      '*': [941, 1209], '0': [941, 1336], '#': [941, 1477]
+   };
 
-  const handleCategorySelection = (category) => {
-    setSelectedCategory(category);
-    sendRequestToBackend(category);
-  };
+   // Initialize audio context
+   useEffect(() => {
+      audioContextRef.current = new (window.AudioContext || (window as any).webkitAudioContext)();
+      return () => {
+         audioContextRef.current?.close();
+      };
+   }, []);
 
-  const sendRequestToBackend = (category) => {
-    const requestData = {
-      language,
-      category: category.label
-    };
+   // Play DTMF tone
+   const playDTMFTone = (key: string, duration: number = 100) => {
+      if (!audioContextRef.current) return;
 
-    // Dummy backend response simulation
-    setTimeout(() => {
-      const dummyResponse = language === "hindi"
-        ? `आपने ${category.hindiLabel} चुना है। यहाँ डमी सलाह है।`
-        : `You selected ${category.label}. Here is a dummy legal advice.`;
-      setResponseText(dummyResponse);
-      speak(dummyResponse);
-    }, 1000);
-  };
+      const frequencies = DTMF_FREQUENCIES[key];
+      if (!frequencies) return;
 
-  const startListening = () => {
-    if (!('webkitSpeechRecognition' in window)) {
-      alert('Speech recognition not supported in this browser.');
-      return;
-    }
+      const oscillators = frequencies.map(freq => {
+         const osc = audioContextRef.current!.createOscillator();
+         const gainNode = audioContextRef.current!.createGain();
+         
+         osc.frequency.value = freq;
+         gainNode.gain.value = 0.1;
+         
+         osc.connect(gainNode);
+         gainNode.connect(audioContextRef.current!.destination);
+         
+         osc.start();
+         setTimeout(() => {
+            gainNode.gain.setValueAtTime(0, audioContextRef.current!.currentTime);
+            osc.stop(audioContextRef.current!.currentTime + 0.1);
+         }, duration);
+         
+         return osc;
+      });
 
-    const recognition = new window.webkitSpeechRecognition();
-    recognition.lang = language === "hindi" ? "hi-IN" : "en-US";
-    recognition.interimResults = false;
-    recognition.onstart = () => setIsListening(true);
-    recognition.onend = () => setIsListening(false);
-    recognition.onerror = (event) => console.error('Recognition error:', event);
-    recognition.onresult = (event) => {
-      const spokenText = event.results[0][0].transcript;
-      handleSpokenCommand(spokenText);
-    };
-    recognition.start();
-  };
+      oscillatorsRef.current[key] = oscillators;
+   };
 
-  const handleSpokenCommand = (command) => {
-    if (!language) {
-      if (command.toLowerCase().includes("english")) handleLanguageSelection("english");
-      if (command.toLowerCase().includes("hindi")) handleLanguageSelection("hindi");
-    } else {
-      const category = categories.find(cat =>
-        command.toLowerCase().includes(cat.label.toLowerCase()) ||
-        (language === "hindi" && command.includes(cat.hindiLabel))
-      );
-      if (category) handleCategorySelection(category);
-    }
-  };
+   // Timer setup
+   useEffect(() => {
+      if (isCalling) {
+         intervalRef.current = window.setInterval(() => {
+            setState(prev => ({
+               ...prev,
+               callDuration: prev.callDuration + 1,
+            }));
+         }, 1000);
+      }
 
-  return (
-    <div className="p-4">
-      <Card className="max-w-md mx-auto">
-        <CardContent>
-          <div className="text-center">
-            <h1 className="text-xl font-bold mb-4">Legal Advisor IVR Chatbot</h1>
-            {responseText && <p className="text-sm mb-4">{responseText}</p>}
-            <div className="grid grid-cols-3 gap-2">
-              {!language ? (
-                [1, 2].map((num) => (
-                  <Button key={num} onClick={() => handleLanguageSelection(num === 1 ? "english" : "hindi")}> 
-                    {num === 1 ? "English" : "हिंदी"}
-                  </Button>
-                ))
-              ) : (
-                categories.map((cat) => (
-                  <Button key={cat.id} onClick={() => handleCategorySelection(cat)}>
-                    {language === "hindi" ? cat.hindiLabel : cat.label}
-                  </Button>
-                ))
-              )}
-              <Button className="col-span-3 bg-gray-200 mt-4" onClick={() => speak(responseText)} disabled={!responseText || isSpeaking}>
-                <Speaker className="w-4 h-4 inline-block mr-2" /> Repeat Response
-              </Button>
-              <Button className="col-span-3 bg-blue-200 mt-4" onClick={startListening} disabled={isListening}>
-                <Mic className="w-4 h-4 inline-block mr-2" /> {isListening ? "Listening..." : "Start Listening"}
-              </Button>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-    </div>
-  );
-};
+      return () => {
+         if (intervalRef.current) {
+            clearInterval(intervalRef.current);
+         }
+      };
+   }, [isCalling]);
 
-export default IVRChatbot;
+   // Speech synthesis setup
+   useEffect(() => {
+      const initializeSpeech = async () => {
+         synthRef.current = window.speechSynthesis;
+
+         const checkVoices = () => {
+            const voices = synthRef.current?.getVoices() || [];
+            if (voices.length > 0) {
+               setVoicesLoaded(true);
+               return true;
+            }
+            return false;
+         };
+
+         if (!checkVoices()) {
+            return new Promise<void>((resolve) => {
+               if (synthRef.current) {
+                  synthRef.current.onvoiceschanged = () => {
+                     if (checkVoices()) {
+                        resolve();
+                     }
+                  };
+               }
+            });
+         }
+      };
+
+      initializeSpeech();
+
+      return () => {
+         if (synthRef.current?.speaking) {
+            synthRef.current.cancel();
+         }
+      };
+   }, []);
+
+   const speak = (text: string) => {
+      if (!synthRef.current || isMuted || !voicesLoaded) return;
+
+      if (synthRef.current.speaking) {
+         synthRef.current.cancel();
+      }
+
+      const utterance = new SpeechSynthesisUtterance(text);
+      utterance.lang = state.language === "en" ? "en-IN" : "hi-IN";
+      utterance.rate = 0.9; // Slightly slower for better clarity
+      utterance.pitch = 1.1; // Slightly higher pitch for better engagement
+
+      const voices = synthRef.current.getVoices();
+      const voice = voices.find(v => v.lang.startsWith(utterance.lang));
+
+      if (voice) {
+         utterance.voice = voice;
+      }
+
+      utterance.onstart = () => setState(prev => ({ ...prev, isSpeaking: true }));
+      utterance.onend = () => setState(prev => ({ ...prev, isSpeaking: false }));
+
+      synthRef.current.speak(utterance);
+   };
+
+   const getGeminiResponse = async (input: string, path: string[]): Promise<GeminiResponse> => {
+      try {
+         // Create a more detailed prompt structure
+         const prompt = {
+            input,
+            context: {
+               currentPath: path,
+               language: state.language,
+               conversationHistory: state.context,
+               level: state.currentLevel,
+               systemPrompt: `You are Legal Saathi, an expert legal assistant specializing in Indian law. 
+                  Your responses should be:
+                  1. Concise but informative (2-3 sentences maximum)
+                  2. Focused on the specific legal topic at hand
+                  3. In ${state.language === 'en' ? 'simple English' : 'simple Hindi'}
+                  4. Include clear next steps or options when applicable
+                  5. Avoid technical jargon unless absolutely necessary
+                  
+                  If you don't understand the query or it's outside legal scope, politely ask for clarification.
+                  
+                  Current navigation path: ${path.join(' > ')}`
+            }
+         };
+
+         const response = await api.post("/api/gemini", prompt);
+         return response.data;
+      } catch (error) {
+         console.error("Gemini API error:", error);
+         const fallbackMsg = state.language === "en" 
+            ? "I apologize, but I'm having trouble understanding. Could you please rephrase your question?"
+            : "क्षमा करें, मुझे समझने में परेशानी हो रही है। क्या आप अपना प्रश्न दोबारा पूछ सकते हैं?";
+         return { text: fallbackMsg };
+      }
+   };
+
+   const handleInput = async (input: string) => {
+      // Play DTMF tone for numerical inputs
+      if (/^\d$/.test(input)) {
+         playDTMFTone(input);
+      }
+
+      const numberInput = input.match(/\d+/)?.[0] || input;
+      const newPath = [...state.currentPath, numberInput];
+
+      setState(prev => ({
+         ...prev,
+         currentPath: newPath,
+         currentLevel: prev.currentLevel + 1,
+      }));
+
+      const response = await getGeminiResponse(input, newPath);
+      
+      // Update context with the new interaction
+      setState(prev => ({
+         ...prev,
+         lastResponse: response.text,
+         context: [...prev.context, { input, response: response.text }],
+      }));
+
+      speak(response.text);
+   };
+
+   const handleKeypadPress = (number: string) => {
+      handleInput(number);
+      setIsKeypadOpen(false);
+   };
+
+   const handleEndCall = () => {
+      synthRef.current?.cancel();
+      if (recognitionRef.current) {
+         recognitionRef.current.stop();
+      }
+      setIsCalling(false);
+      navigate("/");
+   };
+
+   const formatDuration = (seconds: number) => {
+      const mins = Math.floor(seconds / 60);
+      const secs = seconds % 60;
+      return `${mins.toString().padStart(2, "0")}:${secs.toString().padStart(2, "0")}`;
+   };
+
+   return (
+      <div className="min-h-screen bg-black">
+         {isCalling && (
+            <CallInterface
+               callerName="Legal Saathi"
+               onKeypadOpen={() => setIsKeypadOpen(true)}
+               isMuted={isMuted}
+               setIsMuted={setIsMuted}
+               isSpeaker={isSpeakerOn}
+               setIsSpeaker={setIsSpeakerOn}
+               onEndCall={handleEndCall}
+               duration={formatDuration(state.callDuration)}
+            />
+         )}
+         {isKeypadOpen && (
+            <Keypad
+               onClose={() => setIsKeypadOpen(false)}
+               onKeyPress={handleKeypadPress}
+            />
+         )}
+      </div>
+   );
+}
+
+export default IVR;

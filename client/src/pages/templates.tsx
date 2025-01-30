@@ -17,12 +17,12 @@ function DocumentCard({
 
   return (
     <div className="bg-white rounded-2xl p-8 shadow-lg hover:shadow-xl transition-shadow duration-300 flex flex-col items-center text-center">
-      <Icon className="w-12 h-12" style={{ color: "#2563eb" }} />
+      <Icon className="w-12 h-12 text-primary" />
       <h3 className="text-2xl font-semibold text-gray-800 mb-4">{title}</h3>
       <p className="text-gray-600 mb-6 leading-relaxed">{description}</p>
       <button
         onClick={() => navigate(navigation)}
-        className="bg-[#2563eb] text-white px-8 py-2 rounded-full hover:bg-[#2563eb] transition-colors duration-300"
+        className="bg-primary text-white px-8 py-2 rounded-full hover:bg-primary transition-colors duration-300"
       >
         Generate
       </button>
@@ -60,7 +60,7 @@ function Templates() {
       <div className="max-w-6xl mx-auto px-4 py-16">
         <div className="text-center mb-16">
           <h1 className="text-4xl md:text-5xl font-bold mb-6">
-            <span style={{ color: "#2563eb" }}>Hassle-free</span>
+            <span className="text-primary">Hassle-free</span>
             <span className="text-gray-900"> Legal Documents</span>
           </h1>
           <p className="text-gray-600 max-w-3xl mx-auto text-lg leading-relaxed">

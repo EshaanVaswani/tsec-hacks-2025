@@ -44,3 +44,5 @@ venv/
 # Mypy
 .mypy_cache/
 .dmypy.json
+
+*.pdf

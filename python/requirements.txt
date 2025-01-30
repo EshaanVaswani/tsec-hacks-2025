@@ -8,3 +8,10 @@ streamlit
 langchain_community
 python-dotenv
 pypdf
+pandas
+numpy
+sentence-transformers
+scikit-learn
+scipy
+folium
+streamlit-folium

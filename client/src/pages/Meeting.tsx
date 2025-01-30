@@ -1,5 +1,5 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { ClockIcon as ArrowClockwise, Camera, CameraOff } from 'lucide-react';
+import { useState, useEffect, useRef } from 'react';
+import { ClockIcon as ArrowClockwise, Camera } from 'lucide-react';
 import Peer from 'peerjs';
 
 const PRE = "Stream";
@@ -125,12 +125,8 @@ export default function StreamWorks() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-100 font-sans">
-      <nav className="bg-white shadow-md sticky top-0">
-        <div className="container mx-auto px-4 py-3">
-          <h1 className="text-2xl font-bold text-indigo-600">StreamWorks</h1>
-        </div>
-      </nav>
+    <div className="min-h-screen bg-gray-100">
+    
 
       {notification.message && (
         <div className={`container mx-auto mt-4 p-4 rounded-md ${

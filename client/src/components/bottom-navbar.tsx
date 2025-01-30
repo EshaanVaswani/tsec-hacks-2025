@@ -1,13 +1,14 @@
 import { useNavigate } from "react-router-dom";
-import { Home, Users, Sparkles, MessageCircle, Search } from "lucide-react";
+import { Home, Users, Sparkles, MessageCircle, Search, SparklesIcon } from "lucide-react";
 import { motion } from "framer-motion";
 import { cn } from "../lib/utils";
 
 const navItems = [
   { href: "/dashboard", label: "Home", icon: Home },
   { href: "/dashboard/ai", label: "Search", icon: Search },
+  { href: "/dashboard/ai/chat", label: "GenAI", icon: SparklesIcon },
   { href: "/dashboard/community", label: "Community", icon: Users },
-  { href: "/dashboard/chat", label: "Chat", icon: MessageCircle },
+  { href: "/chat", label: "Chat", icon: MessageCircle },
 ];
 
 export function BottomNav() {
@@ -20,7 +21,7 @@ export function BottomNav() {
 
   return (
     <nav className="fixed bottom-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-md border-t border-border">
-      <div className="grid grid-cols-4 gap-1 p-2">
+      <div className="grid grid-cols-5 gap-1 p-2">
         {navItems.map((item) => {
           // Determine active state
           const isActive = removeDashboardPrefix(pathname) === removeDashboardPrefix(item.href);
