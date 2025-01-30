@@ -103,6 +103,7 @@ export default function App() {
               element={<DocumentSummarizer />}
             />
             <Route path="accept-invitation" element={<InvitationPage />} />
+            <Route path="compare" element={<LawComparison />} />
             <Route path="ai" element={<SearchScreen />} />
             <Route path="ai/consent" element={<ConsentUI />} />
             <Route path="ai/ask" element={<Genai />} />
