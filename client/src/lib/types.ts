@@ -125,6 +125,7 @@ export interface IVRState {
    callDuration: number;
    currentPath: string[];
    lastResponse: string;
+   context: { input: string; response: string }[]
 }
 
 export interface GeminiResponse {
