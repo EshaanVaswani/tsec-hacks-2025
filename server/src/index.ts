@@ -8,6 +8,7 @@ import cookieParser from "cookie-parser";
 import { createServer } from "http";
 import { setupSocket } from "./socket";
 import { ipfsRoutes } from "./routes/ipfs.routes";
+import { geminiRoutes } from "./routes/gemini.routes";
 
 const app = express();
 const http = createServer(app); // Attach Express to HTTP server
@@ -28,6 +29,7 @@ app.use(morgan("dev"));
 app.use("/api/user", userRoutes);
 app.use("/api/messages", messageRoutes);
 app.use("/api/ipfs", ipfsRoutes);
+app.use("/api/gemini", geminiRoutes);
 
 setupSocket(http); // Attach Socket.io to HTTP server
 

@@ -33,6 +33,7 @@
     "@radix-ui/react-toast": "^1.2.5",
     "@radix-ui/react-tooltip": "^1.1.7",
     "@react-pdf/renderer": "^4.1.6",
+    "@types/dom-speech-recognition": "^0.0.4",
     "@types/node": "^22.10.7",
     "@web3-react/core": "^8.2.3",
     "@web3-react/injected-connector": "^6.0.7",
