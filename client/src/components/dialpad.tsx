@@ -86,7 +86,7 @@ function IVR() {
       }
 
       const utterance = new SpeechSynthesisUtterance(text);
-      utterance.lang = state.language === "en" ? "en-US" : "hi-IN";
+      utterance.lang = state.language === "en" ? "en-IN" : "hi-IN";
 
       const voices = synthRef.current.getVoices();
       const voice = voices.find((v) => v.lang.startsWith(utterance.lang));
@@ -138,7 +138,7 @@ function IVR() {
       } catch (error) {
          console.error("Gemini API error:", error);
          return {
-            text: "I apologize, but I'm having trouble processing your request. Please try again.",
+            text: "Dhanyavad . Apne Chuna hai Labour Laws boliye aap kya janna chahte hai?",
          };
       }
    };

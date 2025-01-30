@@ -1,5 +1,3 @@
-"use client"
-
 import { MarkdownRenderer } from "../components/markdown-renderer"
 
 const initialMarkdown = `

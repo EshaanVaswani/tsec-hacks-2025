@@ -89,7 +89,32 @@ export interface NewsArticle {
    source: NewsSource;
    title: string;
    url: string;
-}
+ }
+
+
+ export interface Location {
+   id: string;
+   name: string;
+   description: string;
+   coordinates: {
+     lat: number;
+     lng: number;
+   };
+   tags: string[];
+   badges: string[];
+   category: string;
+   status: string;
+   rating: number;
+ }
+ 
+ export interface FilterState {
+   search: string;
+   tags: string[];
+   category: string | null;
+   distance: number;
+   sortBy: 'distance' | 'rating' | 'name';
+ }
+
 
 export interface IVRState {
    currentLevel: number;

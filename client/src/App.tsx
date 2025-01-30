@@ -102,6 +102,7 @@ export default function App() {
               path="document-summarizer"
               element={<Ocr />}
             />
+
             <Route path="accept-invitation" element={<InvitationPage />} />
             <Route path="compare" element={<LawComparison />} />
             <Route path="ai" element={<SearchScreen />} />
