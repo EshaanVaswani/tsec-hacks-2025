@@ -11,6 +11,9 @@ from langchain.chains import LLMChain
 from dotenv import load_dotenv
 import os
 import re
+import joblib
+from sentence_transformers import SentenceTransformer
+import numpy as np
 
 # Load environment variables
 load_dotenv()
@@ -22,25 +25,42 @@ if torch.cuda.is_available():
     torch.set_num_interop_threads(1)
 
 app = Flask(__name__)
-CORS(app)
+CORS(app, resources={
+    r"/api/*": {
+        "origins": ["http://localhost:5173", "http://localhost:5000"],  # Add your frontend URLs
+        "methods": ["GET", "POST", "OPTIONS"],
+        "allow_headers": ["Content-Type", "Authorization"],
+        "expose_headers": ["Content-Range", "X-Content-Range"],
+        "supports_credentials": True,  # Enable if you need to send cookies
+        "max_age": 120  # Cache preflight requests for 2 minutes
+    }
+})
 
-# Initialize the summarization pipeline
+# Initialize models
 summarizer = pipeline(
     "summarization",
     model="facebook/bart-large-cnn",
     device=0 if torch.cuda.is_available() else -1
 )
 
+# Load risk assessment models
+classifier_path = './risk_classifier.pkl'
+if os.path.exists(classifier_path):
+    classifier = joblib.load(classifier_path)
+else:
+    raise FileNotFoundError(f"Classifier model file not found at {classifier_path}")
+
+sentence_transformer = SentenceTransformer('all-MiniLM-L6-v2')
+
 @dataclass
 class CaseReference:
     case_source: str
     category: str
     relevant_text: str
-    pdf_path: str  # Added field for PDF path
+    pdf_path: str
 
 class LegalCaseAdvisor:
     def __init__(self, vector_store_path: str):
-        """Initialize the advisor with a path to the saved vector store"""
         self.vector_store = FAISS.load_local(
             vector_store_path,
             GoogleGenerativeAIEmbeddings(model="models/embedding-001"),
@@ -72,6 +92,7 @@ class LegalCaseAdvisor:
             3. Key considerations and potential challenges
             
             Format the response in a clear, structured way with case citations inline.
+            At the end give links from https://indiankanoon.org/ website related to the case mentioned. 
             """
         )
         
@@ -85,7 +106,7 @@ class LegalCaseAdvisor:
                 case_source=doc.metadata['source'],
                 category=doc.metadata['category'],
                 relevant_text=doc.page_content,
-                pdf_path=doc.metadata.get('pdf_path', '')  # Get PDF path from metadata
+                pdf_path=doc.metadata.get('pdf_path', '')
             )
             cases.append(case)
         return cases
@@ -118,8 +139,7 @@ class LegalCaseAdvisor:
             The accuracy of case references and citations should be independently verified.
             """
             
-            # Include PDF paths in the response
-            result = {
+            return {
                 "success": True,
                 "analysis": response,
                 "cases_referenced": [
@@ -131,8 +151,6 @@ class LegalCaseAdvisor:
                 ],
                 "disclaimer": disclaimer
             }
-        
-            return result
             
         except Exception as e:
             return {
@@ -143,6 +161,27 @@ class LegalCaseAdvisor:
 
 # Initialize legal advisor
 legal_advisor = LegalCaseAdvisor("faiss_index")
+
+def preprocess_text(text):
+    """Clean and preprocess the text data."""
+    text = str(text).lower()
+    text = re.sub(r'[^a-zA-Z\s]', '', text)
+    text = ' '.join(text.split())
+    return text
+
+def analyze_clause_risk(clause_text):
+    """Analyze a single clause and predict its risk level."""
+    processed_text = preprocess_text(clause_text)
+    embedding = sentence_transformer.encode([processed_text], convert_to_tensor=True)
+    risk_level = classifier.predict(embedding)[0]
+    return risk_level
+
+def split_into_clauses(text):
+    """Split text into clauses using common legal document markers."""
+    # Split on common clause markers (numbers, letters, or specific keywords)
+    clause_markers = r'(?:\d+\.|\([a-z]\)|\bARTICLE\b|\bSECTION\b|\bCLAUSE\b)'
+    clauses = re.split(f"(?={clause_markers})", text)
+    return [clause.strip() for clause in clauses if clause.strip()]
 
 def chunk_text(text, max_chunk_size=1024):
     """Split text into chunks that the model can process"""
@@ -205,7 +244,6 @@ def serve_pdf(pdf_path):
 @app.route('/api/analyze', methods=['POST'])
 def analyze_document():
     try:
-        # Get the OCR text from the request
         data = request.json
         ocr_text = data.get('text')
         
@@ -228,11 +266,30 @@ def analyze_document():
         # Get legal advice based on summary
         advice = legal_advisor.get_advice(summary)
         
+        # Split text into clauses and analyze risk for each
+        clauses = split_into_clauses(cleaned_text)
+        clause_analysis = []
+        
+        for i, clause in enumerate(clauses, 1):
+            risk_level = analyze_clause_risk(clause)
+            clause_analysis.append({
+                'clause_number': i,
+                'text': clause,
+                'risk_level': risk_level
+            })
+
+        # Calculate overall document risk level (e.g., highest risk among clauses)
+        overall_risk = max(analysis['risk_level'] for analysis in clause_analysis)
+        
         # Return combined results
         return jsonify({
             'summary': summary,
             'original_text': cleaned_text,
-            'legal_analysis': advice
+            'legal_analysis': advice,
+            'risk_analysis': {
+                'overall_risk': overall_risk,
+                'clause_analysis': clause_analysis
+            }
         })
 
     except Exception as e:

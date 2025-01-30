@@ -106,6 +106,7 @@ export default function App() {
             <Route path="/location" element={<Maps />} />
             <Route path="/location/:id" element={<div>Location Details Placeholder</div>} />
             <Route path="accept-invitation" element={<InvitationPage />} />
+            <Route path="compare" element={<LawComparison />} />
             <Route path="ai" element={<SearchScreen />} />
             <Route path="ai/consent" element={<ConsentUI />} />
             <Route path="ai/ask" element={<Genai />} />

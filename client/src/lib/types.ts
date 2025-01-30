@@ -73,14 +73,14 @@ export interface NewsLocation {
    latitude: number | null;
    longitude: number | null;
    state: string | null;
- }
- 
- export interface NewsSource {
+}
+
+export interface NewsSource {
    name: string;
    url: string;
- }
- 
- export interface NewsArticle {
+}
+
+export interface NewsArticle {
    description: string;
    id: number;
    legal_terms_found: string[];
@@ -114,3 +114,23 @@ export interface NewsLocation {
    distance: number;
    sortBy: 'distance' | 'rating' | 'name';
  }
+
+
+export interface IVRState {
+   currentLevel: number;
+   language: "en" | "hi";
+   isSpeaking: boolean;
+   isListening: boolean;
+   message: string;
+   callDuration: number;
+   currentPath: string[];
+   lastResponse: string;
+}
+
+export interface GeminiResponse {
+   text: string;
+   nextOptions?: {
+      title: string;
+      options: { [key: string]: string };
+   };
+}

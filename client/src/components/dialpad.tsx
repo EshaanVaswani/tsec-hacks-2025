@@ -1,201 +1,211 @@
-// import { useState } from "react";
-// import { Button } from "@/components/ui/button";
-
-// export default function DialPad() {
-//   const [input, setInput] = useState("");
-
-//   const handleButtonClick = (value) => {
-//     console.log(value);
-//     setInput((prevInput) => prevInput + value);
-//   };
-
-//   const buttons = [
-//     { value: "1", letters: "" },
-//     { value: "2", letters: "ABC" },
-//     { value: "3", letters: "DEF" },
-//     { value: "4", letters: "GHI" },
-//     { value: "5", letters: "JKL" },
-//     { value: "6", letters: "MNO" },
-//     { value: "7", letters: "PQRS" },
-//     { value: "8", letters: "TUV" },
-//     { value: "9", letters: "WXYZ" },
-//     { value: "*", letters: "" },
-//     { value: "0", letters: "+" },
-//     { value: "#", letters: "" },
-//   ];
-
-//   return (
-//     <div className="flex flex-col items-center min-h-screen bg-gray-950 text-white p-4">
-//       <p className="mb-10">Calling...</p>
-//       <div className="text-4xl mb-4">{input || ""}</div>
-//       <div className="grid grid-cols-3 gap-4 mb-6 rounded-2xl bg-slate-600/10 p-4">
-//         {buttons.map((button) => (
-//           <Button
-//             key={button.value}
-//             className="bg-gray-800 text-white p-8 rounded-full focus:outline-none hover:bg-gray-700"
-//             onClick={() => handleButtonClick(button.value)}
-//           >
-//             <div className="text-center">
-//               <div className="text-3xl font-bold">{button.value}</div>
-//               <div className="text-sm text-gray-400">{button.letters}</div>
-//             </div>
-//           </Button>
-//         ))}
-//       </div>
-//       <div className="flex gap-4">
-//         <Button className="bg-red-600 text-white px-4 py-2 rounded-full">
-//           End Call
-//         </Button>
-//       </div>
-//     </div>
-//   );
-// }
-import { useState, useEffect } from 'react';
-import { Phone, Mic, MicOff, Volume2, Volume2 as Volume2Off } from 'lucide-react';
-
-interface IVRState {
-  currentLevel: number;
-  language: 'en' | 'hi';
-  isSpeaking: boolean;
-  isListening: boolean;
-  message: string;
-}
+import { useEffect, useRef, useState } from "react";
+import { CallInterface } from "./call-interface";
+import { Keypad } from "./keypad";
+import { GeminiResponse, IVRState } from "@/lib/types";
+import { useNavigate } from "react-router-dom";
+import { api } from "@/lib/api";
 
 function IVR() {
-  const [state, setState] = useState<IVRState>({
-    currentLevel: 0,
-    language: 'en',
-    isSpeaking: false,
-    isListening: false,
-    message: '',
-  });
+   const navigate = useNavigate();
+   const [state, setState] = useState<IVRState>({
+      currentLevel: 0,
+      language: "en",
+      isSpeaking: false,
+      isListening: false,
+      message: "",
+      callDuration: 0,
+      currentPath: [],
+      lastResponse: "",
+   });
 
-  const synth = window.speechSynthesis;
-  let recognition: SpeechRecognition | null = null;
+   const synthRef = useRef<SpeechSynthesis | null>(null);
+   const recognitionRef = useRef<SpeechRecognition | null>(null);
+   const [voicesLoaded, setVoicesLoaded] = useState(false);
 
-  if ('SpeechRecognition' in window || 'webkitSpeechRecognition' in window) {
-    recognition = new (window.SpeechRecognition || (window as any).webkitSpeechRecognition)();
-  }
+   const [isCalling, setIsCalling] = useState(true);
+   const [isKeypadOpen, setIsKeypadOpen] = useState(false);
+   const [isMuted, setIsMuted] = useState(false);
+   const [isSpeakerOn, setIsSpeakerOn] = useState(false);
 
-  const menuOptions = {
-    0: {
-      en: "Welcome to Legal Assistance System. Press 1 for Family Law, 2 for Criminal Law, 3 for Civil Law, 4 for Property Law",
-      hi: "कानूनी सहायता प्रणाली में आपका स्वागत है। पारिवारिक कानून के लिए 1, आपराधिक कानून के लिए 2, नागरिक कानून के लिए 3, संपत्ति कानून के लिए 4 दबाएं"
-    },
-    1: {
-      en: {
-        title: "Family Law",
-        options: "Press 1 for Divorce, 2 for Child Custody, 3 for Maintenance"
-      },
-      hi: {
-        title: "पारिवारिक कानून",
-        options: "तलाक के लिए 1, बच्चों की कस्टडी के लिए 2, रखरखाव के लिए 3 दबाएं"
+   // Initialize speech synthesis
+   useEffect(() => {
+      const initializeSpeech = async () => {
+         synthRef.current = window.speechSynthesis;
+
+         // Function to check if voices are available
+         const checkVoices = () => {
+            const voices = synthRef.current?.getVoices() || [];
+            if (voices.length > 0) {
+               setVoicesLoaded(true);
+               return true;
+            }
+            return false;
+         };
+
+         // Initial check for voices
+         if (!checkVoices()) {
+            // If voices aren't available immediately, set up an event listener
+            return new Promise<void>((resolve) => {
+               if (synthRef.current) {
+                  synthRef.current.onvoiceschanged = () => {
+                     if (checkVoices()) {
+                        resolve();
+                     }
+                  };
+               }
+            });
+         }
+      };
+
+      initializeSpeech();
+
+      // Initialize speech recognition
+      if (
+         "SpeechRecognition" in window ||
+         "webkitSpeechRecognition" in window
+      ) {
+         recognitionRef.current = new ((window as any).SpeechRecognition ||
+            (window as any).webkitSpeechRecognition)();
       }
-    },
-    2: {
-      en: {
-        title: "Criminal Law",
-        options: "Press 1 for Bail, 2 for Criminal Appeals, 3 for Legal Representation"
-      },
-      hi: {
-        title: "आपराधिक कानून",
-        options: "जमानत के लिए 1, आपराधिक अपीलों के लिए 2, कानूनी प्रतिनिधित्व के लिए 3 दबाएं"
+
+      return () => {
+         if (synthRef.current?.speaking) {
+            synthRef.current.cancel();
+         }
+         if (recognitionRef.current) {
+            recognitionRef.current.abort();
+         }
+      };
+   }, []);
+
+   const speak = (text: string) => {
+      if (!synthRef.current || isMuted || !voicesLoaded) return;
+
+      if (synthRef.current.speaking) {
+         synthRef.current.cancel();
       }
-    }
-  };
 
-  const speak = (text: string) => {
-    if (synth.speaking) {
-      synth.cancel();
-    }
-    
-    const utterance = new SpeechSynthesisUtterance(text);
-    utterance.lang = state.language === 'en' ? 'en-US' : 'hi-IN';
-    utterance.onstart = () => setState(prev => ({ ...prev, isSpeaking: true }));
-    utterance.onend = () => setState(prev => ({ ...prev, isSpeaking: false }));
-    synth.speak(utterance);
-  };
+      const utterance = new SpeechSynthesisUtterance(text);
+      utterance.lang = state.language === "en" ? "en-US" : "hi-IN";
 
-  const startListening = () => {
-    if (!recognition) return;
-    
-    recognition.lang = state.language === 'en' ? 'en-US' : 'hi-IN';
-    recognition.continuous = false;
-    recognition.interimResults = false;
+      const voices = synthRef.current.getVoices();
+      const voice = voices.find((v) => v.lang.startsWith(utterance.lang));
 
-    recognition.onstart = () => {
-      setState(prev => ({ ...prev, isListening: true }));
-    };
+      if (voice) {
+         utterance.voice = voice;
+      }
 
-    recognition.onresult = (event) => {
-      const transcript = event.results[0][0].transcript.toLowerCase();
-      handleInput(transcript);
-    };
+      utterance.onstart = () =>
+         setState((prev) => ({ ...prev, isSpeaking: true }));
+      utterance.onend = () =>
+         setState((prev) => ({ ...prev, isSpeaking: false }));
 
-    recognition.onend = () => {
-      setState(prev => ({ ...prev, isListening: false }));
-    };
+      synthRef.current.speak(utterance);
+   };
 
-    recognition.start();
-  };
+   // Welcome message effect
+   useEffect(() => {
+      if (!voicesLoaded) return;
 
-  const handleInput = (input: string) => {
-    const numberInput = input.match(/\d+/)?.[0] || input;
-    
-    setState(prev => ({
-      ...prev,
-      message: `Selected option: ${numberInput}`,
-      currentLevel: prev.currentLevel + 1
-    }));
+      const welcomeMessage =
+         state.language === "en"
+            ? "Welcome to Legal Saathi. How can I help you today?"
+            : "कानूनी साथी में आपका स्वागत है। मैं आपकी कैसे मदद कर सकता हूं?";
 
-    const nextMessage = menuOptions[state.currentLevel + 1]?.[state.language];
-    if (nextMessage) {
-      speak(typeof nextMessage === 'string' ? nextMessage : nextMessage.options);
-    }
-  };
+      // Add a small delay to ensure smooth initialization
+      const timer = setTimeout(() => {
+         speak(welcomeMessage);
+      }, 500);
 
-  const handleKeypadPress = (number: number) => {
-    handleInput(number.toString());
-  };
+      return () => clearTimeout(timer);
+   }, [voicesLoaded, state.language]);
 
-  useEffect(() => {
-    speak(menuOptions[0][state.language]);
-  }, [state.language]);
+   const getGeminiResponse = async (
+      input: string,
+      path: string[]
+   ): Promise<GeminiResponse> => {
+      try {
+         const response = await api.post("/api/gemini", {
+            input,
+            context: {
+               currentPath: path,
+               language: state.language,
+            },
+         });
+         console.log(response);
 
-  return (
-    <div className="min-h-screen bg-gradient-to-b from-gray-900 to-gray-800 flex items-center justify-center p-4">
-      <div className="bg-gray-100 rounded-3xl shadow-2xl max-w-sm w-full overflow-hidden">
-        <div className="bg-gray-800 p-6 text-white text-center">
-          <Phone className="w-8 h-8 mx-auto mb-2" />
-          <h1 className="text-xl font-bold">Legal Assistance IVR</h1>
-          <div className="flex justify-center gap-4 mt-4">
-            <button onClick={() => setState(prev => ({ ...prev, language: 'en' }))} className={`px-3 py-1 rounded ${state.language === 'en' ? 'bg-blue-500' : 'bg-gray-600'}`}>English</button>
-            <button onClick={() => setState(prev => ({ ...prev, language: 'hi' }))} className={`px-3 py-1 rounded ${state.language === 'hi' ? 'bg-blue-500' : 'bg-gray-600'}`}>हिंदी</button>
-          </div>
-        </div>
+         return response.data;
+      } catch (error) {
+         console.error("Gemini API error:", error);
+         return {
+            text: "I apologize, but I'm having trouble processing your request. Please try again.",
+         };
+      }
+   };
 
-        <div className="bg-gray-200 p-4 min-h-[100px] text-center">
-          <p className="text-gray-800">{state.message || "Please select an option"}</p>
-          <div className="flex justify-center gap-2 mt-2">
-            {state.isSpeaking ? <Volume2 className="w-6 h-6 text-blue-500 animate-pulse" /> : <Volume2Off className="w-6 h-6 text-gray-500" />}
-            {state.isListening ? <Mic className="w-6 h-6 text-red-500 animate-pulse" /> : <MicOff className="w-6 h-6 text-gray-500" />}
-          </div>
-        </div>
+   const handleInput = async (input: string) => {
+      const numberInput = input.match(/\d+/)?.[0] || input;
+      const newPath = [...state.currentPath, numberInput];
 
-        <div className="grid grid-cols-3 gap-2 p-4 bg-white">
-          {[1, 2, 3, 4, 5, 6, 7, 8, 9, '*', 0, '#'].map((num) => (
-            <button key={num} onClick={() => handleKeypadPress(Number(num))} className="aspect-square rounded-full bg-gray-100 hover:bg-gray-200 active:bg-gray-300 text-xl font-semibold transition-colors">{num}</button>
-          ))}
-        </div>
+      setState((prev) => ({
+         ...prev,
+         currentPath: newPath,
+         currentLevel: prev.currentLevel + 1,
+      }));
 
-        <div className="p-4 bg-gray-50 border-t border-gray-200">
-          <button onClick={startListening} className="w-full py-3 bg-blue-500 hover:bg-blue-600 text-white rounded-lg flex items-center justify-center gap-2">
-            <Mic className="w-5 h-5" /> {state.language === 'en' ? 'Speak Now' : 'बोलिए'}
-          </button>
-        </div>
+      const response = await getGeminiResponse(input, newPath);
+      setState((prev) => ({
+         ...prev,
+         lastResponse: response.text,
+      }));
+
+      speak(response.text);
+   };
+
+   const handleKeypadPress = (number: string) => {
+      handleInput(number);
+      setIsKeypadOpen(false);
+   };
+
+   const handleEndCall = () => {
+      synthRef.current?.cancel();
+      if (recognitionRef.current) {
+         recognitionRef.current.stop();
+      }
+      setIsCalling(false);
+      navigate("/");
+   };
+
+   const formatDuration = (seconds: number) => {
+      const mins = Math.floor(seconds / 60);
+      const secs = seconds % 60;
+      return `${mins.toString().padStart(2, "0")}:${secs
+         .toString()
+         .padStart(2, "0")}`;
+   };
+
+   return (
+      <div className="min-h-screen bg-black">
+         {isCalling && (
+            <CallInterface
+               callerName="Legal Saathi"
+               onKeypadOpen={() => setIsKeypadOpen(true)}
+               isMuted={isMuted}
+               setIsMuted={setIsMuted}
+               isSpeaker={isSpeakerOn}
+               setIsSpeaker={setIsSpeakerOn}
+               onEndCall={handleEndCall}
+               duration={formatDuration(state.callDuration)}
+            />
+         )}
+         {isKeypadOpen && (
+            <Keypad
+               onClose={() => setIsKeypadOpen(false)}
+               onKeyPress={handleKeypadPress}
+            />
+         )}
       </div>
-    </div>
-  );
+   );
 }
 
 export default IVR;

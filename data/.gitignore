@@ -1,0 +1,46 @@
+# Python bytecode files
+*.pyc
+*.pyo
+*.pyd
+__pycache__/
+
+# Distribution / packaging
+.Python
+env/
+venv/
+venvo/
+ENV/
+VENV/
+dist/
+build/
+*.egg-info/
+python=3.12/
+categories/
+# IDE / Editor files
+.vscode/
+.idea/
+
+# Jupyter Notebook checkpoints
+.ipynb_checkpoints/
+
+# Pytest
+.cache/
+
+# MySQL, SQLite, PostgreSQL, etc.
+*.db
+*.sqlite
+
+# Virtualenv
+venv/
+
+# Logs
+*.log
+
+# Unit test / coverage reports
+.coverage
+*.cover
+*.hypothesis/
+
+# Mypy
+.mypy_cache/
+.dmypy.json
