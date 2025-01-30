@@ -78,6 +78,7 @@ class LegalCaseAdvisor:
         self.analysis_prompt = PromptTemplate(
             input_variables=["situation", "relevant_cases"],
             template="""
+            
             Analyze the following situation and provide actionable steps based on similar cases:
 
             SITUATION:
@@ -91,8 +92,13 @@ class LegalCaseAdvisor:
             2. Specific steps recommended based on similar cases (with case references)
             3. Key considerations and potential challenges
             
-            Format the response in a clear, structured way with case citations inline.
-            At the end give links from https://indiankanoon.org/ website related to the case mentioned. 
+            Act like an contract/application notice drafter that replies to the given Notice based on Indian Laws in reply to this based on whichever domain applicable - Labor Laws
+            -Copyright
+            -Real Estate Regulation & Development Act
+            -GDPR
+            -Foreign Trade & Customs Act
+            and give links to indiankanoon website at the end
+            Format the response in a clear, structured way with case citations inline
             """
         )
         

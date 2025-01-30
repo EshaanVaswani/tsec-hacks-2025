@@ -21,7 +21,7 @@ const News = () => {
 
    useEffect(() => {
       const fetchNews = async () => {
-         const response = await axios.get("http://localhost:5000/api/news");
+         const response = await axios.get("http://localhost:5002/api/news");
 
          if (response.data.success) {
             console.log(response.data.data.articles);

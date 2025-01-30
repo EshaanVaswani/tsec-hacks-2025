@@ -1,80 +1,70 @@
 import React, { useState } from "react";
 import { createWorker } from "tesseract.js";
-import { FileText, Upload, Loader2, AlertTriangle } from "lucide-react";
+import { FileText, Upload, Loader2 } from "lucide-react";
 import { MarkdownRenderer } from "@/components/markdown-renderer";
+import { api } from "@/lib/api";
 
 function Ocr() {
-  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [file, setFile] = useState<File | null>(null);
+  const [fileName, setFileName] = useState("");
+  const [previewUrl, setPreviewUrl] = useState<string>("");
   const [ocrText, setOcrText] = useState<string>("");
   const [isProcessing, setIsProcessing] = useState(false);
-  const [previewUrl, setPreviewUrl] = useState<string>("");
+  const [uploadStatus, setUploadStatus] = useState("");
+  const [ipfsHash, setIpfsHash] = useState("");
 
-  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (file) {
-      setSelectedFile(file);
-      setPreviewUrl(URL.createObjectURL(file));
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const selectedFile = e.target.files?.[0];
+    if (selectedFile) {
+      setFile(selectedFile);
+      setFileName(selectedFile.name);
+      setPreviewUrl(URL.createObjectURL(selectedFile));
       setOcrText("");
     }
   };
 
-  const getRiskBadgeColor = (risk: string) => {
-    switch (risk.toLowerCase()) {
-      case 'high':
-        return 'bg-red-100 text-red-800';
-      case 'medium':
-        return 'bg-yellow-100 text-yellow-800';
-      case 'low':
-        return 'bg-green-100 text-green-800';
-      default:
-        return 'bg-gray-100 text-gray-800';
+  const uploadToIPFS = async () => {
+    if (!file) {
+      setUploadStatus("Please select a file first");
+      return;
+    }
+
+    try {
+      setUploadStatus("Uploading to IPFS...");
+      const formData = new FormData();
+      formData.append("file", file);
+
+      const response = await api.post("/api/ipfs/upload", formData, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
+
+      setIpfsHash(response.data.ipfsHash);
+      setUploadStatus("File uploaded successfully!");
+    } catch (error) {
+      console.error("Error uploading file:", error);
+      setUploadStatus("Error uploading file");
     }
   };
 
   const performOCR = async () => {
-    if (!selectedFile) return;
+    if (!file) return;
 
     setIsProcessing(true);
     try {
       const worker = await createWorker("eng");
-      const { data } = await worker.recognize(selectedFile);
+      const { data } = await worker.recognize(file);
       await worker.terminate();
 
       const response = await fetch("http://localhost:5000/api/analyze", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ text: data.text }),
       });
 
-      if (!response.ok) {
-        throw new Error("Failed to get summary");
-      }
-
+      if (!response.ok) throw new Error("Failed to get summary");
       const result = await response.json();
-      console.log(result);
 
-      // Format the risk analysis section
-      const riskAnalysis = `Risk Analysis:\n\n` +
-        `Overall Risk Level: ${result.risk_analysis.overall_risk}\n\n` +
-        `Clause Analysis:\n${result.risk_analysis.clause_analysis
-          .map((clause: any) => 
-            `Clause ${clause.clause_number}:\n` +
-            `Risk Level: ${clause.risk_level}\n` +
-            `Text: ${clause.text}\n`
-          ).join('\n')}`;
-
-      setOcrText(
-        `Original Text:\n\n${result.original_text}\n\n` +
-        `Summary:\n\n${result.summary}\n\n` +
-        `${riskAnalysis}\n\n` +
-        `Legal Analysis:\n\n${result.legal_analysis.analysis}\n\n` +
-        `References:\n\n${result.legal_analysis.cases_referenced
-          .map((legalCase: any) => 
-            `• ${legalCase.source} (${legalCase.category}) - PDF: ${legalCase.pdf_path}`
-          ).join('\n')}`
-      );
+      setOcrText(`Original Text:\n\n${result.original_text}\n\nSummary:\n\n${result.summary}\n\nRisk Analysis:\n\nOverall Risk Level: ${result.risk_analysis.overall_risk}\n\nClause Analysis:\n${result.risk_analysis.clause_analysis.map((clause: any) => `Clause ${clause.clause_number}:\nRisk Level: ${clause.risk_level}\nText: ${clause.text}\n`).join('\n')}\n\nLegal Analysis:\n\n${result.legal_analysis.analysis}\n\nReferences:\n\n${result.legal_analysis.cases_referenced.map((legalCase: any) => `• ${legalCase.source} (${legalCase.category}) - PDF: ${legalCase.pdf_path}`).join('\n')}`);
     } catch (error) {
       console.error("Error:", error);
       setOcrText("Error processing image. Please try again.");
@@ -82,89 +72,48 @@ function Ocr() {
     setIsProcessing(false);
   };
 
-  // Rest of your component remains the same
   return (
     <div className="min-h-screen bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-3xl mx-auto">
         <div className="text-center mb-8">
           <FileText className="mx-auto h-12 w-12 text-indigo-600" />
-          <h1 className="mt-3 text-3xl font-bold text-gray-900">
-            Image to Text OCR
-          </h1>
-          <p className="mt-2 text-gray-600">
-            Upload an image and extract text using OCR
-          </p>
+          <h1 className="mt-3 text-3xl font-bold text-gray-900">Image to Text OCR</h1>
         </div>
 
         <div className="bg-white shadow sm:rounded-lg p-6">
-          <div className="space-y-6">
-            <div className="flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-lg">
-              <div className="space-y-1 text-center">
-                <Upload className="mx-auto h-12 w-12 text-gray-400" />
-                <div className="flex text-sm text-gray-600">
-                  <label
-                    htmlFor="file-upload"
-                    className="relative cursor-pointer bg-white rounded-md font-medium text-indigo-600 hover:text-indigo-500 focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-indigo-500"
-                  >
-                    <span>Upload a file</span>
-                    <input
-                      id="file-upload"
-                      name="file-upload"
-                      type="file"
-                      className="sr-only"
-                      accept="image/*"
-                      onChange={handleFileChange}
-                    />
-                  </label>
-                  <p className="pl-1">or drag and drop</p>
-                </div>
-                <p className="text-xs text-gray-500">
-                  PNG, JPG, GIF up to 10MB
-                </p>
-              </div>
-            </div>
-
-            {previewUrl && (
-              <div className="mt-4">
-                <img
-                  src={previewUrl}
-                  alt="Preview"
-                  className="max-h-64 mx-auto rounded-lg shadow-lg"
-                />
-              </div>
-            )}
-
-            <div className="flex justify-center">
-              <button
-                onClick={performOCR}
-                disabled={!selectedFile || isProcessing}
-                className="inline-flex items-center px-4 py-2 border border-transparent text-base font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                {isProcessing ? (
-                  <>
-                    <Loader2 className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" />
-                    Processing...
-                  </>
-                ) : (
-                  "Extract Text"
-                )}
-              </button>
-            </div>
-
-            {ocrText && (
-              <div className="mt-6">
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Analysis Results
-                </label>
-                <div className="bg-gray-50 rounded-lg p-4">
-                  <pre className="whitespace-pre-wrap text-sm text-gray-800">
-                    <MarkdownRenderer content={ocrText} />
-                  </pre>
-                </div>
-              </div>
-            )}
+          <div className="mb-4">
+            <label className="block text-gray-700 text-sm font-bold mb-2">Select Document</label>
+            <input type="file" onChange={handleFileChange} className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100" />
           </div>
+
+          {fileName && <p className="mb-4 text-sm text-gray-600">Selected file: {fileName}</p>}
+
+          <button onClick={uploadToIPFS} className="w-full bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">Upload to IPFS</button>
+          {uploadStatus && <p className="mt-4 text-sm text-gray-600">{uploadStatus}</p>}
+
+          {ipfsHash && (
+            <div className="mt-4">
+              <p className="text-sm font-semibold">IPFS Hash:</p>
+              <p className="text-sm break-all text-gray-600">{ipfsHash}</p>
+              <a href={`https://gateway.pinata.cloud/ipfs/${ipfsHash}`} target="_blank" rel="noopener noreferrer" className="text-blue-500 hover:text-blue-700 text-sm">View on IPFS</a>
+            </div>
+          )}
         </div>
+
+        {previewUrl && <img src={previewUrl} alt="Preview" className="max-h-64 mx-auto rounded-lg shadow-lg mt-4" />}
+
+        <button onClick={performOCR} disabled={!file || isProcessing} className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded mt-4 disabled:opacity-50 disabled:cursor-not-allowed">
+          {isProcessing ? (<><Loader2 className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" /> Processing...</>) : "Extract Text"}
+        </button>
+
+        {ocrText && (
+          <div className="mt-6">
+            <label className="block text-sm font-medium text-gray-700 mb-2">Analysis Results</label>
+            <div className="bg-gray-50 rounded-lg p-4">
+              <MarkdownRenderer content={ocrText} />
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

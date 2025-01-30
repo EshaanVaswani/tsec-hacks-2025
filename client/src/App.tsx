@@ -69,7 +69,7 @@ export default function App() {
       <Routes>
         <Route path="" element={<MainLayout />}>
           <Route path="/ivr" element={<DialPad />} />
-          <Route path="/ocr" element={<Ocr />} />
+         
           <Route path="/" element={<OnboardingCarousel />} />
 
           <Route
@@ -100,12 +100,13 @@ export default function App() {
             <Route index element={<Home />} />
             <Route
               path="document-summarizer"
-              element={<DocumentSummarizer />}
+              element={<Ocr />}
             />
             <Route path="accept-invitation" element={<InvitationPage />} />
             <Route path="compare" element={<LawComparison />} />
             <Route path="ai" element={<SearchScreen />} />
-            <Route path="ai/consent" element={<ConsentUI />} />
+            <Route path="ai/chat" element={<><iframe src="http://localhost:8501/" width="100%" height="600px" ></iframe>
+              </>} />
             <Route path="ai/ask" element={<Genai />} />
             <Route path="ai/fam" element={<ReviewPage />} />
             <Route path="notifications" element={<NotificationsScreen />} />
