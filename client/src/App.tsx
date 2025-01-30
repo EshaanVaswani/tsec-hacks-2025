@@ -31,7 +31,6 @@ import Templates from "./pages/templates";
 import LawComparison from "./pages/law-comparison";
 import News from "./pages/news";
 import MainLayout from "./layouts/main-layout";
-import Maps from "./components/maps";
 
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   const cookie = Cookies.get("token");
@@ -103,8 +102,7 @@ export default function App() {
               path="document-summarizer"
               element={<DocumentSummarizer />}
             />
-            <Route path="/location" element={<Maps />} />
-            <Route path="/location/:id" element={<div>Location Details Placeholder</div>} />
+
             <Route path="accept-invitation" element={<InvitationPage />} />
             <Route path="compare" element={<LawComparison />} />
             <Route path="ai" element={<SearchScreen />} />
