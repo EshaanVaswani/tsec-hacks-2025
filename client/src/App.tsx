@@ -31,7 +31,7 @@ import Templates from "./pages/templates";
 import LawComparison from "./pages/law-comparison";
 import News from "./pages/news";
 import MainLayout from "./layouts/main-layout";
-import Maps from "./components/maps";
+import Meeting from "./pages/Meeting"
 
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   const cookie = Cookies.get("token");
@@ -69,7 +69,8 @@ export default function App() {
     <>
       <Routes>
         <Route path="" element={<MainLayout />}>
-          <Route path="/ivr" element={<DialPad />} />
+        <Route path="/meeting" element={<Meeting/>}/>
+          {/* <Route path="/ivr" element={<IVR />} /> */}
           <Route path="/ocr" element={<Ocr />} />
           <Route path="/" element={<OnboardingCarousel />} />
 
@@ -103,8 +104,6 @@ export default function App() {
               path="document-summarizer"
               element={<DocumentSummarizer />}
             />
-            <Route path="/location" element={<Maps />} />
-            <Route path="/location/:id" element={<div>Location Details Placeholder</div>} />
             <Route path="accept-invitation" element={<InvitationPage />} />
             <Route path="compare" element={<LawComparison />} />
             <Route path="ai" element={<SearchScreen />} />
