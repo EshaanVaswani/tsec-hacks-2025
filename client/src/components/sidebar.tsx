@@ -124,7 +124,7 @@ export function Sidebar({ chats, isCollapsed }: SidebarProps) {
                 setSelectedUser(chat._id);
               }}
               className={cn(
-                buttonVariants({ variant: chat.variant, size: "xl" }),
+                buttonVariants({ variant: chat.variant, size: "lg" }),
                 chat.variant === "secondary" &&
                   "dark dark:text-white dark:hover:bg-muted dark:hover:text-white shrink",
                 "justify-start gap-4",

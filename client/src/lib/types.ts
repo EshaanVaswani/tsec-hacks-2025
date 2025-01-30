@@ -66,3 +66,27 @@ export interface Group {
    createdAt: Date;
    updatedAt: Date;
 }
+
+export interface NewsLocation {
+   city: string | null;
+   country: string;
+   latitude: number | null;
+   longitude: number | null;
+   state: string | null;
+ }
+ 
+ export interface NewsSource {
+   name: string;
+   url: string;
+ }
+ 
+ export interface NewsArticle {
+   description: string;
+   id: number;
+   legal_terms_found: string[];
+   location: NewsLocation;
+   publishedAt: string;
+   source: NewsSource;
+   title: string;
+   url: string;
+ }
