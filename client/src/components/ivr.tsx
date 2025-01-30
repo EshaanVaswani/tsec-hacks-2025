@@ -22,8 +22,13 @@ const Dialer = () => {
     { label: "#", sub: "" },
   ];
 
-  const handleKeyPress = (value) => {
-    setInput((prev) => prev + value);
+  interface Key {
+    label: string;
+    sub: string;
+  }
+
+  const handleKeyPress = (value: string) => {
+    setInput((prev: string) => prev + value);
   };
 
   const handleCall = () => {
