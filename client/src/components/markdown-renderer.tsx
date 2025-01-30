@@ -11,7 +11,7 @@ interface MarkdownRendererProps {
 export function MarkdownRenderer({ content, className = "" }: MarkdownRendererProps) {
   return (
     <ReactMarkdown
-      className={`markdown-content ${className}`}
+      className={`font-serif markdown-content ${className}`}
       components={{
         h1: ({ node, ...props }) => <h1 className="text-3xl font-bold mt-6 mb-4" {...props} />,
         h2: ({ node, ...props }) => <h2 className="text-2xl font-semibold mt-5 mb-3" {...props} />,
