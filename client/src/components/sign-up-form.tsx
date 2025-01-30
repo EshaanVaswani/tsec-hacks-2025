@@ -32,6 +32,16 @@ import { Label } from "./ui/label";
 import { Progress } from "./ui/progress";
 import { Separator } from "./ui/separator";
 import { FileUpload } from "./file-upload";
+import {
+   Select,
+   SelectContent,
+   SelectGroup,
+   SelectItem,
+   SelectTrigger,
+   SelectValue,
+} from "./ui/select";
+import { useAuth } from "@/hooks/useAuth";
+import { useUser } from "./hooks/use-user";
 
 type Step = "auth" | "phone" | "profile" | "success";
 interface FormData {
@@ -42,6 +52,7 @@ interface FormData {
    phone: string;
    otp: string;
    username: string;
+   role: string;
 }
 
 export function SignUpForm() {
@@ -55,10 +66,14 @@ export function SignUpForm() {
       phone: "",
       otp: "",
       username: "",
+      role: "user",
    });
    const [otpTimer, setOtpTimer] = useState(30);
    const [canResend, setCanResend] = useState(false);
    const navigate = useNavigate();
+
+   const { setUser } = useAuth();
+   const { setUser: setUser2 } = useUser();
 
    const handleSubmit = async (e: React.FormEvent) => {
       e.preventDefault();
@@ -88,6 +103,7 @@ export function SignUpForm() {
       formData1.append("email", formData.email);
       formData1.append("password", formData.password);
       formData1.append("phone", formData.phone);
+      formData1.append("role", formData.role);
 
       if (formData.avatar && formData.avatar instanceof File) {
          formData1.append("avatar", formData.avatar);
@@ -177,6 +193,8 @@ export function SignUpForm() {
 
          if (res.data.success) {
             toast.success(res.data.message);
+            setUser(res.data.updatedUser);
+            setUser2(res.data.updatedUser);
             setStep("success");
          }
       } catch (error) {
@@ -201,7 +219,7 @@ export function SignUpForm() {
                mediaUrl=""
                placeholder="Upload your profile picture"
                acceptedTypes="image/*"
-               containerClassName="h-24 w-24 mx-auto"
+               containerClassName="h-40 w-40 mx-auto"
             />
          </div>
 
@@ -281,6 +299,25 @@ export function SignUpForm() {
                </p>
             </div>
          )}
+         <div className="space-y-2">
+            <Select
+               onValueChange={(v) => setFormData({ ...formData, role: v })}
+            >
+               <Label htmlFor="role">Role</Label>
+               <SelectTrigger>
+                  <SelectValue placeholder="Select role" />
+               </SelectTrigger>
+               <SelectContent>
+                  <SelectGroup>
+                     <SelectItem value="user">General User</SelectItem>
+                     <SelectItem value="student">Law Student</SelectItem>
+                     <SelectItem value="professional">
+                        Professional Lawyer
+                     </SelectItem>
+                  </SelectGroup>
+               </SelectContent>
+            </Select>
+         </div>
          <Button
             type="submit"
             disabled={

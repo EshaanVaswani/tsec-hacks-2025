@@ -203,8 +203,19 @@ export const updateUsername = TryCatch(
 export const searchUser = TryCatch(async (req, res, next) => {
   const { username } = req.query;
   console.log(username);
+
+  if(req.user.role === "professional") {
+    const user = await User.find({
+      name: { $regex: username, $options: "i" },
+      role: "user"
+    }).select("-password");
+
+    return res.status(200).json({ success: true, user });
+  }
+
   const user = await User.find({
     name: { $regex: username, $options: "i" },
+    role: "professional"
   }).select("-password");
 
   const updatedUser = user.filter(

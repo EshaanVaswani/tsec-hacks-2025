@@ -29,6 +29,8 @@ import SearchScreen from "./pages/search";
 import Story from "./pages/story";
 import Templates from "./pages/templates";
 import LawComparison from "./pages/law-comparison";
+import News from "./pages/news";
+import MainLayout from "./layouts/main-layout";
 
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   const cookie = Cookies.get("token");
@@ -65,82 +67,93 @@ export default function App() {
   return (
     <>
       <Routes>
-        <Route path="/ivr" element={<DialPad />} />
-        <Route path="/ocr" element={<Ocr />} />
-        <Route path="/" element={<OnboardingCarousel />} />
+        <Route path="" element={<MainLayout />}>
+          <Route path="/ivr" element={<DialPad />} />
+          <Route path="/ocr" element={<Ocr />} />
+          <Route path="/" element={<OnboardingCarousel />} />
 
-        <Route
-          path="/auth/register"
-          element={
-            <AuthRoute>
-              <SignUpForm />
-            </AuthRoute>
-          }
-        />
-        <Route
-          path="/auth/login"
-          element={
-            <AuthRoute>
-              <LoginForm />
-            </AuthRoute>
-          }
-        />
-
-        <Route
-          path="/dashboard"
-          element={
-            <ProtectedRoute>
-              <Dashboard />
-            </ProtectedRoute>
-          }
-        >
-          <Route index element={<Home />} />
-          <Route path="document-summarizer" element={<DocumentSummarizer />} />
-          <Route path="accept-invitation" element={<InvitationPage />} />
-          <Route path="ai" element={<SearchScreen />} />
-          <Route path="ai/consent" element={<ConsentUI />} />
-          <Route path="ai/ask" element={<Genai />} />
-          <Route path="ai/fam" element={<ReviewPage />} />
-          <Route path="notifications" element={<NotificationsScreen />} />
-          <Route path="profile" element={<UserProfile />} />
-          <Route path="test" element={<AudioRecorder />} />
-          <Route path="community" element={<GroupPage />} />
-          <Route path="editor" element={<PhotoEditor />} />
-          <Route path="templates" element={<Templates />} />
-          <Route path="compare" element={<LawComparison />} />
           <Route
-            path="templates/nondisclosure"
-            element={<SimplePartnershipDeed />}
+            path="/auth/register"
+            element={
+              <AuthRoute>
+                <SignUpForm />
+              </AuthRoute>
+            }
+          />
+          <Route
+            path="/auth/login"
+            element={
+              <AuthRoute>
+                <LoginForm />
+              </AuthRoute>
+            }
           />
 
-          <Route path="templates/copyright" element={<Copyright />} />
+          <Route
+            path="/dashboard"
+            element={
+              <ProtectedRoute>
+                <Dashboard />
+              </ProtectedRoute>
+            }
+          >
+            <Route index element={<Home />} />
+            <Route
+              path="document-summarizer"
+              element={<DocumentSummarizer />}
+            />
+            <Route path="accept-invitation" element={<InvitationPage />} />
+            <Route path="ai" element={<SearchScreen />} />
+            <Route path="ai/consent" element={<ConsentUI />} />
+            <Route path="ai/ask" element={<Genai />} />
+            <Route path="ai/fam" element={<ReviewPage />} />
+            <Route path="notifications" element={<NotificationsScreen />} />
+            <Route path="profile" element={<UserProfile />} />
+            <Route path="test" element={<AudioRecorder />} />
+            <Route path="community" element={<GroupPage />} />
+            <Route path="editor" element={<PhotoEditor />} />
+            <Route path="templates" element={<Templates />} />
+            <Route
+              path="templates/nondisclosure"
+              element={<SimplePartnershipDeed />}
+            />
+            <Route path="templates/copyright" element={<Copyright />} />
+          </Route>
+
+          <Route
+            path="story/:id"
+            element={
+              <ProtectedRoute>
+                <Story />
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/chat"
+            element={
+              <ProtectedRoute>
+                <ChatPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/ipfs"
+            element={
+              <ProtectedRoute>
+                <IPFSUpload />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/news"
+            element={
+              <ProtectedRoute>
+                <News />
+              </ProtectedRoute>
+            }
+          />
         </Route>
-
-        <Route
-          path="story/:id"
-          element={
-            <ProtectedRoute>
-              <Story />
-            </ProtectedRoute>
-          }
-        />
-
-        <Route
-          path="/chat"
-          element={
-            <ProtectedRoute>
-              <ChatPage />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/ipfs"
-          element={
-            <ProtectedRoute>
-              <IPFSUpload />
-            </ProtectedRoute>
-          }
-        />
       </Routes>
     </>
   );
